@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,6 +25,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.dream.homeset.core.model.UnsplashPhoto
 import com.dream.homeset.core.model.UnsplashUrls
@@ -36,9 +38,9 @@ fun WallpaperGalleryRoute(
     modifier: Modifier = Modifier,
     viewModel: WallpaperGalleryViewModel = viewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val photos = viewModel.photosPagingData.collectAsLazyPagingItems()
     WallpaperGalleryScreen(
-        uiState = uiState,
+        photos = photos,
         modifier = modifier
     )
 }
@@ -47,31 +49,13 @@ fun WallpaperGalleryRoute(
 @Composable
 private fun WallpaperGalleryRoutePreview() {
     HomeSetTheme {
-        WallpaperGalleryScreen(
-            uiState = GalleryUiState.Success(
-                photos = List(15) { index ->
-                    UnsplashPhoto(
-                        id = index.toString(),
-                        color = "#CCCCCC",
-                        width = 1080,
-                        height = 1920,
-                        urls = UnsplashUrls(
-                            raw = null,
-                            full = null,
-                            regular = null,
-                            small = null,
-                            thumb = null
-                        )
-                    )
-                }
-            )
-        )
+        Text(text = "Wallpaper gallery preview")
     }
 }
 
 @Composable
 fun WallpaperGalleryScreen(
-    uiState: GalleryUiState,
+    photos: LazyPagingItems<UnsplashPhoto>,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -79,16 +63,19 @@ fun WallpaperGalleryScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        when (uiState) {
-            is GalleryUiState.Loading -> {
+        val loadState = photos.loadState
+
+        when {
+            loadState.refresh is LoadState.Loading -> {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
 
-            is GalleryUiState.Error -> {
+            loadState.refresh is LoadState.Error -> {
+                val error = loadState.refresh as LoadState.Error
                 Text(
-                    text = uiState.message,
+                    text = error.error.message ?: "Something went wrong",
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -97,8 +84,8 @@ fun WallpaperGalleryScreen(
                 )
             }
 
-            is GalleryUiState.Success -> {
-                PhotoGrid(photos = uiState.photos)
+            else -> {
+                PhotoGrid(photos = photos)
             }
         }
     }
@@ -107,7 +94,7 @@ fun WallpaperGalleryScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PhotoGrid(
-    photos: List<UnsplashPhoto>,
+    photos: LazyPagingItems<UnsplashPhoto>,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -115,8 +102,11 @@ private fun PhotoGrid(
         contentPadding = PaddingValues(4.dp),
         modifier = modifier.fillMaxSize()
     ) {
-        items(photos, key = { it.id }) { photo ->
-            PhotoGridItem(photo = photo)
+        items(photos.itemCount) { index ->
+            val photo = photos[index]
+            if (photo != null) {
+                PhotoGridItem(photo = photo)
+            }
         }
     }
 }
