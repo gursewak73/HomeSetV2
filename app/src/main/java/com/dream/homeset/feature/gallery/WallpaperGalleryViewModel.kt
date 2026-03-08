@@ -34,12 +34,28 @@ class WallpaperGalleryViewModel(
     private val _selectedPhoto = MutableStateFlow<UnsplashPhoto?>(null)
     val selectedPhoto: StateFlow<UnsplashPhoto?> = _selectedPhoto.asStateFlow()
 
+    private val _previewPhotos = MutableStateFlow<List<UnsplashPhoto>>(emptyList())
+    val previewPhotos: StateFlow<List<UnsplashPhoto>> = _previewPhotos.asStateFlow()
+
+    private val _previewIndex = MutableStateFlow(0)
+    val previewIndex: StateFlow<Int> = _previewIndex.asStateFlow()
+
+    fun setPreviewData(photos: List<UnsplashPhoto>, index: Int) {
+        if (photos.isNotEmpty() && index in photos.indices) {
+            _previewPhotos.value = photos
+            _previewIndex.value = index
+            _selectedPhoto.value = photos[index]
+        }
+    }
+
     fun setSelectedPhoto(photo: UnsplashPhoto) {
         _selectedPhoto.value = photo
     }
 
     fun clearSelectedPhoto() {
         _selectedPhoto.value = null
+        _previewPhotos.value = emptyList()
+        _previewIndex.value = 0
     }
 
     init {

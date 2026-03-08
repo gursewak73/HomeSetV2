@@ -42,8 +42,9 @@ fun WallpaperGalleryRoute(
     WallpaperGalleryScreen(
         photos = photos,
         modifier = modifier,
-        onPhotoClick = { photo ->
-            viewModel.setSelectedPhoto(photo)
+        onPhotoClick = { photo, index ->
+            val photoList = (0 until photos.itemCount).mapNotNull { photos[it] }
+            viewModel.setPreviewData(photoList, index)
             navController.navigate(ROUTE_WALLPAPER_PREVIEW)
         }
     )
@@ -61,7 +62,7 @@ private fun WallpaperGalleryRoutePreview() {
 fun WallpaperGalleryScreen(
     photos: LazyPagingItems<UnsplashPhoto>,
     modifier: Modifier = Modifier,
-    onPhotoClick: (UnsplashPhoto) -> Unit
+    onPhotoClick: (UnsplashPhoto, Int) -> Unit
 ) {
     Box(
         modifier = modifier
@@ -104,7 +105,7 @@ fun WallpaperGalleryScreen(
 private fun PhotoGrid(
     photos: LazyPagingItems<UnsplashPhoto>,
     modifier: Modifier = Modifier,
-    onPhotoClick: (UnsplashPhoto) -> Unit
+    onPhotoClick: (UnsplashPhoto, Int) -> Unit
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
@@ -116,7 +117,7 @@ private fun PhotoGrid(
             if (photo != null) {
                 PhotoGridItem(
                     photo = photo,
-                    onClick = { onPhotoClick(photo) }
+                    onClick = { onPhotoClick(photo, index) }
                 )
             }
         }

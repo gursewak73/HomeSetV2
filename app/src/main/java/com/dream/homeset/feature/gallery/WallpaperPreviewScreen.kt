@@ -2,13 +2,13 @@ package com.dream.homeset.feature.gallery
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -23,11 +23,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.dream.homeset.core.model.UnsplashPhoto
+import net.engawapg.lib.zoomable.rememberZoomState
+import net.engawapg.lib.zoomable.zoomable
 
 const val ROUTE_WALLPAPER_PREVIEW = "wallpaper_preview"
 
@@ -37,28 +38,41 @@ fun WallpaperPreviewRoute(
     viewModel: WallpaperGalleryViewModel,
     onBack: () -> Unit
 ) {
-    val photo by viewModel.selectedPhoto.collectAsStateWithLifecycle(initialValue = null)
+    val previewPhotos by viewModel.previewPhotos.collectAsStateWithLifecycle(initialValue = emptyList())
+    val previewIndex by viewModel.previewIndex.collectAsStateWithLifecycle(initialValue = 0)
     val context = androidx.compose.ui.platform.LocalContext.current
 
-    photo?.let { p ->
-        WallpaperPreviewScreen(
-            photo = p,
-            onBack = onBack,
-            onSetHome = { viewModel.setWallpaper(context, p, WallpaperDestination.HOME) },
-            onSetLock = { viewModel.setWallpaper(context, p, WallpaperDestination.LOCK) },
-            onSetBoth = { viewModel.setWallpaper(context, p, WallpaperDestination.BOTH) }
+    if (previewPhotos.isNotEmpty()) {
+        val pagerState = rememberPagerState(
+            pageCount = { previewPhotos.size },
+            initialPage = previewIndex
         )
-    } ?: Box(
-        modifier = Modifier.fillMaxSize().background(Color.Black),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            CircularProgressIndicator(color = Color.White)
-            Button(
-                onClick = onBack,
-                modifier = Modifier.padding(top = 24.dp)
-            ) {
-                Text("Back to Gallery")
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            val photo = previewPhotos[page]
+            WallpaperPreviewScreen(
+                photo = photo,
+                onBack = onBack,
+                onSetHome = { viewModel.setWallpaper(context, photo, WallpaperDestination.HOME) },
+                onSetLock = { viewModel.setWallpaper(context, photo, WallpaperDestination.LOCK) },
+                onSetBoth = { viewModel.setWallpaper(context, photo, WallpaperDestination.BOTH) }
+            )
+        }
+    } else {
+        Box(
+            modifier = Modifier.fillMaxSize().background(Color.Black),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator(color = Color.White)
+                Button(
+                    onClick = onBack,
+                    modifier = Modifier.padding(top = 24.dp)
+                ) {
+                    Text("Back to Gallery")
+                }
             }
         }
     }
@@ -72,21 +86,8 @@ fun WallpaperPreviewScreen(
     onSetLock: () -> Unit,
     onSetBoth: () -> Unit
 ) {
-    var scale by remember { mutableStateOf(1f) }
-    var offsetX by remember { mutableStateOf(0f) }
-    var offsetY by remember { mutableStateOf(0f) }
     var isExpanded by remember { mutableStateOf(false) }
-
-    val transformableState = rememberTransformableState { zoomChange, panChange, _ ->
-        scale = (scale * zoomChange).coerceIn(1f, 5f)
-        if (scale > 1f) {
-            offsetX += panChange.x
-            offsetY += panChange.y
-        } else {
-            offsetX = 0f
-            offsetY = 0f
-        }
-    }
+    val zoomState = rememberZoomState()
 
     Box(
         modifier = Modifier
@@ -99,13 +100,7 @@ fun WallpaperPreviewScreen(
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .fillMaxSize()
-                .graphicsLayer(
-                    scaleX = scale,
-                    scaleY = scale,
-                    translationX = offsetX,
-                    translationY = offsetY
-                )
-                .transformable(transformableState)
+                .zoomable(zoomState)
         )
 
         Column(
