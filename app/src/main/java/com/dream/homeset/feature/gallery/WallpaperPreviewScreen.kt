@@ -95,140 +95,221 @@ fun WallpaperPreviewScreen(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        SubcomposeAsyncImage(
-            model = photo.urls.full ?: photo.urls.regular ?: photo.urls.small ?: photo.urls.thumb,
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .fillMaxSize()
-                .zoomable(zoomState),
-            content = {
-                when (painter.state) {
-                    is coil.compose.AsyncImagePainter.State.Loading -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = Color.White)
-                        }
-                    }
-                    is coil.compose.AsyncImagePainter.State.Error -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Failed to load image",
-                                color = Color.White
-                            )
-                        }
-                    }
-                    else -> {
-                        SubcomposeAsyncImageContent()
-                    }
-                }
-            }
+        WallpaperImageContent(
+            photo = photo,
+            zoomState = zoomState
         )
 
-        Column(
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
-                .padding(16.dp)
         ) {
-            if (!isExpanded) {
-                Button(
-                    onClick = onSetBoth,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text(text = "Set as wallpaper")
-                }
+            WallpaperControlPanel(
+                isExpanded = isExpanded,
+                onExpandedChange = { isExpanded = it },
+                onSetHome = onSetHome,
+                onSetLock = onSetLock,
+                onSetBoth = onSetBoth,
+                onBack = onBack
+            )
+        }
+    }
+}
 
-                Button(
-                    onClick = { isExpanded = true },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Text(text = "More options")
-                }
-            } else {
-                Text(
-                    text = "Set as wallpaper",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(bottom = 8.dp)
-                )
+@Composable
+private fun WallpaperImageContent(
+    photo: UnsplashPhoto,
+    zoomState: net.engawapg.lib.zoomable.ZoomState
+) {
+    val imageUrl = photo.urls.full ?: photo.urls.regular ?: photo.urls.small ?: photo.urls.thumb
 
-                Button(
-                    onClick = onSetHome,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                ) {
-                    Text(text = "Set Home Screen")
+    SubcomposeAsyncImage(
+        model = imageUrl,
+        contentDescription = null,
+        contentScale = ContentScale.Fit,
+        modifier = Modifier
+            .fillMaxSize()
+            .zoomable(zoomState),
+        content = {
+            when (painter.state) {
+                is coil.compose.AsyncImagePainter.State.Loading -> {
+                    LoadingState()
                 }
-
-                Button(
-                    onClick = onSetLock,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                ) {
-                    Text(text = "Set Lock Screen")
+                is coil.compose.AsyncImagePainter.State.Error -> {
+                    ErrorState()
                 }
-
-                Button(
-                    onClick = onSetBoth,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text(text = "Set Both")
+                else -> {
+                    SubcomposeAsyncImageContent()
                 }
-
-                Button(
-                    onClick = { isExpanded = false },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Text(text = "Hide options")
-                }
-            }
-
-            Button(
-                onClick = onBack,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
-            ) {
-                Text(text = "Back to Gallery")
             }
         }
+    )
+}
+
+@Composable
+private fun LoadingState() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = Color.White)
+    }
+}
+
+@Composable
+private fun ErrorState() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Failed to load image",
+            color = Color.White
+        )
+    }
+}
+
+@Composable
+private fun WallpaperControlPanel(
+    isExpanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onSetHome: () -> Unit,
+    onSetLock: () -> Unit,
+    onSetBoth: () -> Unit,
+    onBack: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
+            .padding(16.dp)
+    ) {
+        if (!isExpanded) {
+            CollapsedControlPanel(
+                onSetBoth = onSetBoth,
+                onExpandClick = { onExpandedChange(true) }
+            )
+        } else {
+            ExpandedControlPanel(
+                onSetHome = onSetHome,
+                onSetLock = onSetLock,
+                onSetBoth = onSetBoth,
+                onCollapseClick = { onExpandedChange(false) }
+            )
+        }
+
+        BackButton(onBack = onBack)
+    }
+}
+
+@Composable
+private fun CollapsedControlPanel(
+    onSetBoth: () -> Unit,
+    onExpandClick: () -> Unit
+) {
+    Button(
+        onClick = onSetBoth,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary
+        )
+    ) {
+        Text(text = "Set as wallpaper")
+    }
+
+    Button(
+        onClick = onExpandClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Text(text = "More options")
+    }
+}
+
+@Composable
+private fun ExpandedControlPanel(
+    onSetHome: () -> Unit,
+    onSetLock: () -> Unit,
+    onSetBoth: () -> Unit,
+    onCollapseClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Set as wallpaper",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+    }
+
+    Button(
+        onClick = onSetHome,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Text(text = "Set Home Screen")
+    }
+
+    Button(
+        onClick = onSetLock,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Text(text = "Set Lock Screen")
+    }
+
+    Button(
+        onClick = onSetBoth,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary
+        )
+    ) {
+        Text(text = "Set Both")
+    }
+
+    Button(
+        onClick = onCollapseClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Text(text = "Hide options")
+    }
+}
+
+@Composable
+private fun BackButton(onBack: () -> Unit) {
+    Button(
+        onClick = onBack,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Text(text = "Back to Gallery")
     }
 }
