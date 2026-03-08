@@ -25,7 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
 import com.dream.homeset.core.model.UnsplashPhoto
 import net.engawapg.lib.zoomable.rememberZoomState
 import net.engawapg.lib.zoomable.zoomable
@@ -94,13 +95,43 @@ fun WallpaperPreviewScreen(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        AsyncImage(
+        SubcomposeAsyncImage(
             model = photo.urls.full ?: photo.urls.regular ?: photo.urls.small ?: photo.urls.thumb,
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .fillMaxSize()
-                .zoomable(zoomState)
+                .zoomable(zoomState),
+            content = {
+                when (painter.state) {
+                    is coil.compose.AsyncImagePainter.State.Loading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Color.White)
+                        }
+                    }
+                    is coil.compose.AsyncImagePainter.State.Error -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Failed to load image",
+                                color = Color.White
+                            )
+                        }
+                    }
+                    else -> {
+                        SubcomposeAsyncImageContent()
+                    }
+                }
+            }
         )
 
         Column(
