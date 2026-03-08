@@ -7,8 +7,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.dream.homeset.ui.theme.HomeSetTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.dream.homeset.feature.gallery.ROUTE_GALLERY
+import com.dream.homeset.feature.gallery.ROUTE_WALLPAPER_PREVIEW
 import com.dream.homeset.feature.gallery.WallpaperGalleryRoute
+import com.dream.homeset.feature.gallery.WallpaperGalleryViewModel
+import com.dream.homeset.feature.gallery.WallpaperPreviewRoute
+import com.dream.homeset.ui.theme.HomeSetTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,7 +25,28 @@ class MainActivity : ComponentActivity() {
         setContent {
             HomeSetTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    WallpaperGalleryRoute()
+                    val viewModel = viewModel<WallpaperGalleryViewModel>()
+                    val navController = rememberNavController()
+                    NavHost(
+                        navController = navController,
+                        startDestination = ROUTE_GALLERY
+                    ) {
+                        composable(ROUTE_GALLERY) {
+                            WallpaperGalleryRoute(
+                                navController = navController,
+                                viewModel = viewModel
+                            )
+                        }
+                        composable(ROUTE_WALLPAPER_PREVIEW) {
+                            WallpaperPreviewRoute(
+                                viewModel = viewModel,
+                                onBack = {
+                                    viewModel.clearSelectedPhoto()
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

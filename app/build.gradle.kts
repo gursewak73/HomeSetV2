@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.paging.runtime.ktx)
     implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.navigation.compose)
     debugImplementation(libs.chucker.debug)
     releaseImplementation(libs.chucker.no.op)
     testImplementation(libs.junit)

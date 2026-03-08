@@ -13,6 +13,9 @@ import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.dream.homeset.core.model.UnsplashPhoto
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 enum class WallpaperDestination {
@@ -27,6 +30,17 @@ class WallpaperGalleryViewModel(
 
     val photosPagingData: Flow<PagingData<UnsplashPhoto>> =
         repository.getPhotosStream().cachedIn(viewModelScope)
+
+    private val _selectedPhoto = MutableStateFlow<UnsplashPhoto?>(null)
+    val selectedPhoto: StateFlow<UnsplashPhoto?> = _selectedPhoto.asStateFlow()
+
+    fun setSelectedPhoto(photo: UnsplashPhoto) {
+        _selectedPhoto.value = photo
+    }
+
+    fun clearSelectedPhoto() {
+        _selectedPhoto.value = null
+    }
 
     init {
         loadFirstPage()
