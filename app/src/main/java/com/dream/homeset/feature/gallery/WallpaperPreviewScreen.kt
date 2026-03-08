@@ -25,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import com.dream.homeset.core.model.UnsplashPhoto
@@ -41,7 +43,17 @@ fun WallpaperPreviewRoute(
 ) {
     val previewPhotos by viewModel.previewPhotos.collectAsStateWithLifecycle(initialValue = emptyList())
     val previewIndex by viewModel.previewIndex.collectAsStateWithLifecycle(initialValue = 0)
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val isSettingWallpaper by viewModel.isSettingWallpaper.collectAsStateWithLifecycle(initialValue = false)
+    val wallpaperSetSuccess by viewModel.wallpaperSetSuccess.collectAsStateWithLifecycle(initialValue = false)
+    val context = LocalContext.current
+
+    // Show toast when wallpaper is set successfully
+    androidx.compose.runtime.LaunchedEffect(wallpaperSetSuccess) {
+        if (wallpaperSetSuccess) {
+            Toast.makeText(context, "Wallpaper set successfully!", Toast.LENGTH_SHORT).show()
+            viewModel.resetWallpaperSetSuccess()
+        }
+    }
 
     if (previewPhotos.isNotEmpty()) {
         val pagerState = rememberPagerState(
@@ -50,12 +62,14 @@ fun WallpaperPreviewRoute(
         )
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            userScrollEnabled = !isSettingWallpaper
         ) { page ->
             val photo = previewPhotos[page]
             WallpaperPreviewScreen(
                 photo = photo,
                 onBack = onBack,
+                isSettingWallpaper = isSettingWallpaper,
                 onSetHome = { viewModel.setWallpaper(context, photo, WallpaperDestination.HOME) },
                 onSetLock = { viewModel.setWallpaper(context, photo, WallpaperDestination.LOCK) },
                 onSetBoth = { viewModel.setWallpaper(context, photo, WallpaperDestination.BOTH) }
@@ -83,6 +97,7 @@ fun WallpaperPreviewRoute(
 fun WallpaperPreviewScreen(
     photo: UnsplashPhoto,
     onBack: () -> Unit,
+    isSettingWallpaper: Boolean = false,
     onSetHome: () -> Unit,
     onSetLock: () -> Unit,
     onSetBoth: () -> Unit
@@ -97,7 +112,8 @@ fun WallpaperPreviewScreen(
     ) {
         WallpaperImageContent(
             photo = photo,
-            zoomState = zoomState
+            zoomState = zoomState,
+            isEnabled = !isSettingWallpaper
         )
 
         Box(
@@ -111,8 +127,19 @@ fun WallpaperPreviewScreen(
                 onSetHome = onSetHome,
                 onSetLock = onSetLock,
                 onSetBoth = onSetBoth,
-                onBack = onBack
+                onBack = onBack,
+                isEnabled = !isSettingWallpaper
             )
+        }
+
+        // Interaction blocker overlay
+        if (isSettingWallpaper) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+            )
+            WallpaperSettingLoader()
         }
     }
 }
@@ -120,17 +147,24 @@ fun WallpaperPreviewScreen(
 @Composable
 private fun WallpaperImageContent(
     photo: UnsplashPhoto,
-    zoomState: net.engawapg.lib.zoomable.ZoomState
+    zoomState: net.engawapg.lib.zoomable.ZoomState,
+    isEnabled: Boolean = true
 ) {
     val imageUrl = photo.urls.full ?: photo.urls.regular ?: photo.urls.small ?: photo.urls.thumb
+
+    val modifier = if (isEnabled) {
+        Modifier
+            .fillMaxSize()
+            .zoomable(zoomState)
+    } else {
+        Modifier.fillMaxSize()
+    }
 
     SubcomposeAsyncImage(
         model = imageUrl,
         contentDescription = null,
         contentScale = ContentScale.Fit,
-        modifier = Modifier
-            .fillMaxSize()
-            .zoomable(zoomState),
+        modifier = modifier,
         content = {
             when (painter.state) {
                 is coil.compose.AsyncImagePainter.State.Loading -> {
@@ -181,7 +215,8 @@ private fun WallpaperControlPanel(
     onSetHome: () -> Unit,
     onSetLock: () -> Unit,
     onSetBoth: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    isEnabled: Boolean = true
 ) {
     Column(
         modifier = Modifier
@@ -192,28 +227,32 @@ private fun WallpaperControlPanel(
         if (!isExpanded) {
             CollapsedControlPanel(
                 onSetBoth = onSetBoth,
-                onExpandClick = { onExpandedChange(true) }
+                onExpandClick = { onExpandedChange(true) },
+                isEnabled = isEnabled
             )
         } else {
             ExpandedControlPanel(
                 onSetHome = onSetHome,
                 onSetLock = onSetLock,
                 onSetBoth = onSetBoth,
-                onCollapseClick = { onExpandedChange(false) }
+                onCollapseClick = { onExpandedChange(false) },
+                isEnabled = isEnabled
             )
         }
 
-        BackButton(onBack = onBack)
+        BackButton(onBack = onBack, isEnabled = isEnabled)
     }
 }
 
 @Composable
 private fun CollapsedControlPanel(
     onSetBoth: () -> Unit,
-    onExpandClick: () -> Unit
+    onExpandClick: () -> Unit,
+    isEnabled: Boolean = true
 ) {
     Button(
         onClick = onSetBoth,
+        enabled = isEnabled,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
@@ -226,6 +265,7 @@ private fun CollapsedControlPanel(
 
     Button(
         onClick = onExpandClick,
+        enabled = isEnabled,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
@@ -242,7 +282,8 @@ private fun ExpandedControlPanel(
     onSetHome: () -> Unit,
     onSetLock: () -> Unit,
     onSetBoth: () -> Unit,
-    onCollapseClick: () -> Unit
+    onCollapseClick: () -> Unit,
+    isEnabled: Boolean = true
 ) {
     Box(
         modifier = Modifier.fillMaxWidth(),
@@ -258,6 +299,7 @@ private fun ExpandedControlPanel(
 
     Button(
         onClick = onSetHome,
+        enabled = isEnabled,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
@@ -267,6 +309,7 @@ private fun ExpandedControlPanel(
 
     Button(
         onClick = onSetLock,
+        enabled = isEnabled,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
@@ -276,6 +319,7 @@ private fun ExpandedControlPanel(
 
     Button(
         onClick = onSetBoth,
+        enabled = isEnabled,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
@@ -288,6 +332,7 @@ private fun ExpandedControlPanel(
 
     Button(
         onClick = onCollapseClick,
+        enabled = isEnabled,
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 8.dp),
@@ -300,9 +345,10 @@ private fun ExpandedControlPanel(
 }
 
 @Composable
-private fun BackButton(onBack: () -> Unit) {
+private fun BackButton(onBack: () -> Unit, isEnabled: Boolean = true) {
     Button(
         onClick = onBack,
+        enabled = isEnabled,
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 8.dp),
@@ -313,3 +359,27 @@ private fun BackButton(onBack: () -> Unit) {
         Text(text = "Back to Gallery")
     }
 }
+
+@Composable
+private fun WallpaperSettingLoader() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.7f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            CircularProgressIndicator(color = Color.White)
+            Text(
+                text = "Setting wallpaper...",
+                color = Color.White,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+        }
+    }
+}
+

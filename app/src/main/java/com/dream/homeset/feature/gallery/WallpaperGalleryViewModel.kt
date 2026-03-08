@@ -12,11 +12,14 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.dream.homeset.core.model.UnsplashPhoto
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 enum class WallpaperDestination {
     HOME,
@@ -39,6 +42,16 @@ class WallpaperGalleryViewModel(
 
     private val _previewIndex = MutableStateFlow(0)
     val previewIndex: StateFlow<Int> = _previewIndex.asStateFlow()
+
+    private val _isSettingWallpaper = MutableStateFlow(false)
+    val isSettingWallpaper: StateFlow<Boolean> = _isSettingWallpaper.asStateFlow()
+
+    private val _wallpaperSetSuccess = MutableStateFlow(false)
+    val wallpaperSetSuccess: StateFlow<Boolean> = _wallpaperSetSuccess.asStateFlow()
+
+    fun resetWallpaperSetSuccess() {
+        _wallpaperSetSuccess.value = false
+    }
 
     fun setPreviewData(photos: List<UnsplashPhoto>, index: Int) {
         if (photos.isNotEmpty() && index in photos.indices) {
@@ -77,40 +90,55 @@ class WallpaperGalleryViewModel(
         if (url == null) return
 
         viewModelScope.launch {
-            runCatching {
-                val loader = ImageLoader(context)
-                val request = ImageRequest.Builder(context)
-                    .data(url)
-                    .allowHardware(false)
-                    .build()
+            _isSettingWallpaper.value = true
+            _wallpaperSetSuccess.value = false
+            try {
+                withTimeoutOrNull(30000L) { // 30 second timeout
+                    withContext(Dispatchers.IO) {
+                        val loader = ImageLoader(context)
+                        val request = ImageRequest.Builder(context)
+                            .data(url)
+                            .allowHardware(false)
+                            .build()
 
-                val result = loader.execute(request)
-                val bitmap = (result as? SuccessResult)?.drawable
-                    ?.let { drawable ->
-                        if (drawable is android.graphics.drawable.BitmapDrawable) {
-                            drawable.bitmap
-                        } else {
-                            val width = drawable.intrinsicWidth.takeIf { it > 0 } ?: 1080
-                            val height = drawable.intrinsicHeight.takeIf { it > 0 } ?: 1920
-                            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also { bmp ->
-                                val canvas = android.graphics.Canvas(bmp)
-                                drawable.setBounds(0, 0, canvas.width, canvas.height)
-                                drawable.draw(canvas)
+                        val result = loader.execute(request)
+                        val bitmap = (result as? SuccessResult)?.drawable
+                            ?.let { drawable ->
+                                if (drawable is android.graphics.drawable.BitmapDrawable) {
+                                    drawable.bitmap
+                                } else {
+                                    val width = drawable.intrinsicWidth.takeIf { it > 0 } ?: 1080
+                                    val height = drawable.intrinsicHeight.takeIf { it > 0 } ?: 1920
+                                    Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also { bmp ->
+                                        val canvas = android.graphics.Canvas(bmp)
+                                        drawable.setBounds(0, 0, canvas.width, canvas.height)
+                                        drawable.draw(canvas)
+                                    }
+                                }
                             }
-                        }
-                    } ?: return@runCatching
 
-                val wm = WallpaperManager.getInstance(context)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    val flags = when (destination) {
-                        WallpaperDestination.HOME -> WallpaperManager.FLAG_SYSTEM
-                        WallpaperDestination.LOCK -> WallpaperManager.FLAG_LOCK
-                        WallpaperDestination.BOTH -> WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
+                        if (bitmap != null) {
+                            val wm = WallpaperManager.getInstance(context)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                val flags = when (destination) {
+                                    WallpaperDestination.HOME -> WallpaperManager.FLAG_SYSTEM
+                                    WallpaperDestination.LOCK -> WallpaperManager.FLAG_LOCK
+                                    WallpaperDestination.BOTH -> WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
+                                }
+                                wm.setBitmap(bitmap, null, true, flags)
+                            } else {
+                                wm.setBitmap(bitmap)
+                            }
+                            _wallpaperSetSuccess.value = true
+                        }
                     }
-                    wm.setBitmap(bitmap, null, true, flags)
-                } else {
-                    wm.setBitmap(bitmap)
                 }
+            } catch (e: Exception) {
+                // Log error if needed
+                e.printStackTrace()
+                _wallpaperSetSuccess.value = false
+            } finally {
+                _isSettingWallpaper.value = false
             }
         }
     }
