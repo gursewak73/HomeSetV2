@@ -1,5 +1,6 @@
 package com.dream.homeset.feature.gallery
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -30,8 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -95,6 +96,8 @@ fun WallpaperGalleryScreen(
     onPhotoClick: (Photo, Int) -> Unit,
     onFeaturedClick: (Photo) -> Unit
 ) {
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+
     Scaffold(
         topBar = { TopBar() },
         containerColor = BgDark
@@ -103,29 +106,58 @@ fun WallpaperGalleryScreen(
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
         ) {
-            // Hero Banner: Wallpaper of the Day
-            featuredPhoto?.let { photo ->
-                HeroBanner(photo = photo, onClick = { onFeaturedClick(photo) })
+            // Tab Navigation (Persistent at top below TopBar)
+            TabNavigation(
+                selectedTabIndex = selectedTabIndex,
+                onTabSelected = { selectedTabIndex = it }
+            )
+
+            Crossfade(
+                targetState = selectedTabIndex,
+                label = "TabContent",
+                modifier = Modifier.weight(1f)
+            ) { index ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    if (index == 0) {
+                        // Explore View
+                        featuredPhoto?.let { photo ->
+                            HeroBanner(photo = photo, onClick = { onFeaturedClick(photo) })
+                        }
+                        
+                        SectionHeader(title = "Trending Now", onSeeAll = {})
+                        TrendingPhotos(photos = photos, onPhotoClick = onPhotoClick)
+                    } else {
+                        // Collections View
+                        if (collections.isNotEmpty()) {
+                            SectionHeader(title = "Popular Collections", onSeeAll = {})
+                            Column(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                collections.forEach { collection ->
+                                    CollectionCard(
+                                        collection = collection,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier.fillMaxSize().padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("No collections found", color = Slate500)
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
             }
-
-            // Tab Navigation
-            TabNavigation()
-
-            // Trending Now Section
-            SectionHeader(title = "Trending Now", onSeeAll = {})
-            
-            // Photo Grid (Inline implementation for simplicity in this file)
-            TrendingPhotos(photos = photos, onPhotoClick = onPhotoClick)
-
-            // Popular Collections
-            if (collections.isNotEmpty()) {
-                SectionHeader(title = "Popular Collections", onSeeAll = {})
-                CollectionsCarousel(collections = collections)
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -136,6 +168,7 @@ private fun TopBar() {
         modifier = Modifier
             .fillMaxWidth()
             .background(BgDark.copy(alpha = 0.8f))
+            .statusBarsPadding()
             .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -223,35 +256,59 @@ private fun HeroBanner(
 }
 
 @Composable
-private fun TabNavigation() {
+private fun TabNavigation(
+    selectedTabIndex: Int,
+    onTabSelected: (Int) -> Unit
+) {
     Row(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        // Explore Tab
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.clickable { onTabSelected(0) }
+        ) {
             Text(
                 text = "Explore",
-                color = PrimaryBlue,
+                color = if (selectedTabIndex == 0) PrimaryBlue else Slate500,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.ExtraBold,
+                fontWeight = if (selectedTabIndex == 0) FontWeight.ExtraBold else FontWeight.Bold,
                 modifier = Modifier.padding(vertical = 12.dp)
             )
-            Box(
-                modifier = Modifier
-                    .width(40.dp)
-                    .height(2.dp)
-                    .background(PrimaryBlue)
-            )
+            if (selectedTabIndex == 0) {
+                Box(
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(2.dp)
+                        .background(PrimaryBlue)
+                )
+            }
         }
-        Text(
-            text = "Collections",
-            color = Slate500,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 12.dp)
-        )
+        
+        // Collections Tab
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.clickable { onTabSelected(1) }
+        ) {
+            Text(
+                text = "Collections",
+                color = if (selectedTabIndex == 1) PrimaryBlue else Slate500,
+                fontSize = 14.sp,
+                fontWeight = if (selectedTabIndex == 1) FontWeight.ExtraBold else FontWeight.Bold,
+                modifier = Modifier.padding(vertical = 12.dp)
+            )
+            if (selectedTabIndex == 1) {
+                Box(
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(2.dp)
+                        .background(PrimaryBlue)
+                )
+            }
+        }
     }
 }
 
@@ -373,10 +430,12 @@ private fun CollectionsCarousel(collections: List<Collection>) {
 }
 
 @Composable
-private fun CollectionCard(collection: Collection) {
+private fun CollectionCard(
+    collection: Collection,
+    modifier: Modifier = Modifier
+) {
     Box(
-        modifier = Modifier
-            .width(260.dp)
+        modifier = modifier
             .height(130.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(
