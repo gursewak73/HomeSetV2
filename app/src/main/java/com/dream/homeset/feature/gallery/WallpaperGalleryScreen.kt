@@ -25,6 +25,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -55,7 +57,7 @@ import com.dream.homeset.feature.gallery.ui.ROUTE_WALLPAPER_PREVIEW
 
 const val ROUTE_GALLERY = "gallery"
 
-private val PrimaryBlue = Color(0xFF3B19E6)
+private val PrimaryBlue = Color(0xFF0066FF)
 private val BgDark = Color(0xFF141121)
 private val Slate300 = Color(0xFFCBD5E1)
 private val Slate500 = Color(0xFF64748B)
@@ -113,49 +115,151 @@ fun WallpaperGalleryScreen(
                 onTabSelected = { selectedTabIndex = it }
             )
 
+            // Dynamic Content
             Crossfade(
                 targetState = selectedTabIndex,
                 label = "TabContent",
                 modifier = Modifier.weight(1f)
             ) { index ->
-                Column(
+                if (index == 0) {
+                    // Explore View
+                    ExploreView(
+                        photos = photos,
+                        featuredPhoto = featuredPhoto,
+                        onPhotoClick = onPhotoClick,
+                        onFeaturedClick = onFeaturedClick
+                    )
+                } else {
+                    // Collections View
+                    CollectionsView(
+                        collections = collections
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExploreView(
+    photos: LazyPagingItems<Photo>,
+    featuredPhoto: Photo?,
+    onPhotoClick: (Photo, Int) -> Unit,
+    onFeaturedClick: (Photo) -> Unit
+) {
+    androidx.compose.foundation.lazy.LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 24.dp)
+    ) {
+        // Hero Banner: Wallpaper of the Day
+        item {
+            if (featuredPhoto != null) {
+                HeroBanner(photo = featuredPhoto, onClick = { onFeaturedClick(featuredPhoto) })
+            } else {
+                // Shimmer/Placeholder for the banner while loading
+                Box(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 10f)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(Color.White.copy(alpha = 0.05f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = PrimaryBlue.copy(alpha = 0.5f))
+                }
+            }
+        }
+
+        // Trending Header
+        item {
+            SectionHeader(
+                title = "Trending Now",
+                onSeeAll = null
+            )
+        }
+
+        // Photos Grid (Chunked into pairs for LazyColumn)
+        val itemCount = photos.itemCount
+        items(count = (itemCount + 1) / 2) { rowIndex ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                val leftIndex = rowIndex * 2
+                val rightIndex = rowIndex * 2 + 1
+                
+                // Left Photo
+                photos[leftIndex]?.let { photo ->
+                    PhotoGridItem(
+                        photo = photo,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onPhotoClick(photo, leftIndex) }
+                    )
+                } ?: Spacer(modifier = Modifier.weight(1f))
+
+                // Right Photo
+                if (rightIndex < itemCount) {
+                    photos[rightIndex]?.let { photo ->
+                        PhotoGridItem(
+                            photo = photo,
+                            modifier = Modifier.weight(1f),
+                            onClick = { onPhotoClick(photo, rightIndex) }
+                        )
+                    } ?: Spacer(modifier = Modifier.weight(1f))
+                } else {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+
+        if (photos.loadState.append is LoadState.Loading) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = PrimaryBlue)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CollectionsView(
+    collections: List<Collection>
+) {
+    androidx.compose.foundation.lazy.LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 24.dp)
+    ) {
+        item {
+            SectionHeader(title = "Popular Collections", onSeeAll = {})
+        }
+
+        if (collections.isNotEmpty()) {
+            items(collections.size) { index ->
+                CollectionCard(
+                    collection = collections[index],
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
+        } else {
+            item {
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    if (index == 0) {
-                        // Explore View
-                        featuredPhoto?.let { photo ->
-                            HeroBanner(photo = photo, onClick = { onFeaturedClick(photo) })
-                        }
-                        
-                        SectionHeader(title = "Trending Now", onSeeAll = {})
-                        TrendingPhotos(photos = photos, onPhotoClick = onPhotoClick)
-                    } else {
-                        // Collections View
-                        if (collections.isNotEmpty()) {
-                            SectionHeader(title = "Popular Collections", onSeeAll = {})
-                            Column(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                collections.forEach { collection ->
-                                    CollectionCard(
-                                        collection = collection,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
-                            }
-                        } else {
-                            Box(
-                                modifier = Modifier.fillMaxSize().padding(32.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("No collections found", color = Slate500)
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Text("No collections found", color = Slate500)
                 }
             }
         }
@@ -243,13 +347,6 @@ private fun HeroBanner(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = "Ethereal Peaks", color = Slate300, fontSize = 14.sp)
-                Button(
-                    onClick = onClick,
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("Apply Now", fontWeight = FontWeight.Bold, color = Color.White)
-                }
             }
         }
     }
@@ -313,7 +410,7 @@ private fun TabNavigation(
 }
 
 @Composable
-private fun SectionHeader(title: String, onSeeAll: () -> Unit) {
+private fun SectionHeader(title: String, onSeeAll: (() -> Unit)? = null) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -327,60 +424,18 @@ private fun SectionHeader(title: String, onSeeAll: () -> Unit) {
             fontSize = 18.sp,
             fontWeight = FontWeight.ExtraBold
         )
-        Text(
-            text = "VIEW ALL",
-            color = PrimaryBlue,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable(onClick = onSeeAll)
-        )
-    }
-}
-
-@Composable
-private fun TrendingPhotos(
-    photos: LazyPagingItems<Photo>,
-    onPhotoClick: (Photo, Int) -> Unit
-) {
-    // We'll show the top few items as a grid within the scrollable column.
-    // For a true grid, we might need a fixed height or a custom layout since it's nested in a verticalScroll.
-    // Let's use a simple Column with Rows for a 2x2 or 2xN preview.
-    
-    val count = if (photos.itemCount > 6) 6 else photos.itemCount
-    
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        for (i in 0 until count step 2) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                photos[i]?.let { photo ->
-                    PhotoGridItem(
-                        photo = photo,
-                        modifier = Modifier.weight(1f),
-                        onClick = { onPhotoClick(photo, i) }
-                    )
-                }
-                if (i + 1 < count) {
-                    photos[i + 1]?.let { photo ->
-                        PhotoGridItem(
-                            photo = photo,
-                            modifier = Modifier.weight(1f),
-                            onClick = { onPhotoClick(photo, i + 1) }
-                        )
-                    }
-                } else {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-        
-        if (photos.loadState.append is LoadState.Loading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp),
-                color = PrimaryBlue
+        if (onSeeAll != null) {
+            Text(
+                text = "VIEW ALL",
+                color = PrimaryBlue,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable(onClick = onSeeAll)
             )
         }
     }
 }
+
 
 @Composable
 private fun PhotoGridItem(

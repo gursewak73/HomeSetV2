@@ -18,8 +18,9 @@ interface UnsplashApiService {
     @GET("photos/random")
     suspend fun getRandomPhoto(
         @Query("client_id") clientId: String = UnsplashConfig.CLIENT_ID,
-        @Query("featured") featured: Boolean = true
-    ): UnsplashPhoto
+        @Query("featured") featured: Boolean = true,
+        @Query("count") count: Int = 1
+    ): List<UnsplashPhoto>
 
     @GET("collections/featured")
     suspend fun getFeaturedCollections(

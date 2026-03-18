@@ -68,9 +68,13 @@ class WallpaperGalleryViewModel(
         viewModelScope.launch {
             getFeaturedPhotoUseCase().onSuccess {
                 _featuredPhoto.value = it
+            }.onFailure { e ->
+                android.util.Log.e("GalleryViewModel", "Failed to load featured photo", e)
             }
             getCollectionsUseCase().onSuccess {
                 _collections.value = it
+            }.onFailure { e ->
+                android.util.Log.e("GalleryViewModel", "Failed to load collections", e)
             }
         }
     }

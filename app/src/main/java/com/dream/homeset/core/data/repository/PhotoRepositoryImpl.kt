@@ -26,8 +26,9 @@ class PhotoRepositoryImpl(
 
     override suspend fun getFeaturedPhoto(): Result<Photo> {
         return try {
-            val response = api.getRandomPhoto(featured = true)
-            Result.success(response.toDomain())
+            val response = api.getRandomPhoto(featured = true, count = 1)
+            val photo = response.firstOrNull() ?: throw Exception("No photo found")
+            Result.success(photo.toDomain())
         } catch (e: Exception) {
             Result.failure(e)
         }
