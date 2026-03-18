@@ -7,6 +7,7 @@ data class UnsplashPhoto(
     @SerializedName("color") val color: String?,
     @SerializedName("width") val width: Int,
     @SerializedName("height") val height: Int,
-    @SerializedName("urls") val urls: UnsplashUrls
+    @SerializedName("urls") val urls: UnsplashUrls,
+    @SerializedName("user") val user: UnsplashUser?
 )
 
