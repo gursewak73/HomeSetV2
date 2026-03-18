@@ -6,6 +6,7 @@ import com.dream.homeset.core.domain.model.PhotoUser
 import com.dream.homeset.core.model.UnsplashPhoto
 import com.dream.homeset.core.model.UnsplashUrls
 import com.dream.homeset.core.model.UnsplashUser
+import com.dream.homeset.core.model.UnsplashCollection
 
 fun UnsplashPhoto.toDomain(): Photo {
     return Photo(
@@ -33,5 +34,15 @@ fun UnsplashUser.toDomain(): PhotoUser {
         id = id,
         name = name,
         username = username
+    )
+}
+
+fun UnsplashCollection.toDomain(): com.dream.homeset.core.domain.model.Collection {
+    return com.dream.homeset.core.domain.model.Collection(
+        id = id,
+        title = title,
+        description = description,
+        totalPhotos = totalPhotos,
+        coverPhoto = coverPhoto?.toDomain()
     )
 }

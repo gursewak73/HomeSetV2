@@ -11,11 +11,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.dream.homeset.feature.gallery.ui.ROUTE_GALLERY
-import com.dream.homeset.feature.gallery.ui.ROUTE_WALLPAPER_PREVIEW
-import com.dream.homeset.feature.gallery.ui.WallpaperGalleryRoute
-import com.dream.homeset.feature.gallery.viewmodel.WallpaperGalleryViewModel
-import com.dream.homeset.feature.gallery.ui.WallpaperPreviewRoute
+import com.dream.homeset.feature.gallery.ROUTE_GALLERY
+import com.dream.homeset.feature.gallery.ROUTE_WALLPAPER_PREVIEW
+import com.dream.homeset.feature.gallery.WallpaperGalleryRoute
+import com.dream.homeset.feature.gallery.WallpaperGalleryViewModel
+import com.dream.homeset.feature.gallery.WallpaperPreviewRoute
 import com.dream.homeset.ui.theme.HomeSetTheme
 
 class MainActivity : ComponentActivity() {
