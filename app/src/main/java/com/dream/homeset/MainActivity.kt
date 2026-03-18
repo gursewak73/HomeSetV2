@@ -34,7 +34,8 @@ class MainActivity : ComponentActivity() {
                         composable(ROUTE_GALLERY) {
                             WallpaperGalleryRoute(
                                 navController = navController,
-                                viewModel = viewModel
+                                viewModel = viewModel,
+                                onCloseClick = { finish() }
                             )
                         }
                         composable(ROUTE_WALLPAPER_PREVIEW) {

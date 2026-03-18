@@ -66,7 +66,8 @@ private val Slate500 = Color(0xFF64748B)
 fun WallpaperGalleryRoute(
     modifier: Modifier = Modifier,
     navController: NavController,
-    viewModel: WallpaperGalleryViewModel = viewModel()
+    viewModel: WallpaperGalleryViewModel = viewModel(),
+    onCloseClick: () -> Unit
 ) {
     val photos = viewModel.photosPagingData.collectAsLazyPagingItems()
     val collections = viewModel.collectionsPagingData.collectAsLazyPagingItems()
@@ -77,6 +78,7 @@ fun WallpaperGalleryRoute(
         featuredPhoto = featuredPhoto,
         collections = collections,
         modifier = modifier,
+        onCloseClick = onCloseClick,
         onPhotoClick = { photo, index ->
             val photoList = (0 until photos.itemCount).mapNotNull { photos[it] }
             viewModel.setPreviewData(photoList, index)
@@ -95,13 +97,14 @@ fun WallpaperGalleryScreen(
     featuredPhoto: Photo?,
     collections: LazyPagingItems<Collection>,
     modifier: Modifier = Modifier,
+    onCloseClick: () -> Unit,
     onPhotoClick: (Photo, Int) -> Unit,
     onFeaturedClick: (Photo) -> Unit
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     Scaffold(
-        topBar = { TopBar() },
+        topBar = { TopBar(onCloseClick = onCloseClick) },
         containerColor = BgDark
     ) { paddingValues ->
         Column(
@@ -324,7 +327,7 @@ private fun CollectionsView(
 }
 
 @Composable
-private fun TopBar() {
+private fun TopBar(onCloseClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -334,7 +337,12 @@ private fun TopBar() {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+        Icon(
+            Icons.Default.Close,
+            contentDescription = "Close",
+            tint = Color.White,
+            modifier = Modifier.clickable(onClick = onCloseClick)
+        )
         Text(
             text = "Wallpapers",
             color = Color.White,
