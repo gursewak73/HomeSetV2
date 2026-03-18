@@ -1,4 +1,4 @@
-package com.dream.homeset.feature.gallery
+package com.dream.homeset.feature.gallery.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -27,7 +27,8 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
-import com.dream.homeset.core.model.UnsplashPhoto
+import com.dream.homeset.core.domain.model.Photo
+import com.dream.homeset.feature.gallery.viewmodel.WallpaperGalleryViewModel
 import com.dream.homeset.ui.theme.HomeSetTheme
 
 const val ROUTE_GALLERY = "gallery"
@@ -60,9 +61,9 @@ private fun WallpaperGalleryRoutePreview() {
 
 @Composable
 fun WallpaperGalleryScreen(
-    photos: LazyPagingItems<UnsplashPhoto>,
+    photos: LazyPagingItems<Photo>,
     modifier: Modifier = Modifier,
-    onPhotoClick: (UnsplashPhoto, Int) -> Unit
+    onPhotoClick: (Photo, Int) -> Unit
 ) {
     Box(
         modifier = modifier
@@ -103,9 +104,9 @@ fun WallpaperGalleryScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PhotoGrid(
-    photos: LazyPagingItems<UnsplashPhoto>,
+    photos: LazyPagingItems<Photo>,
     modifier: Modifier = Modifier,
-    onPhotoClick: (UnsplashPhoto, Int) -> Unit
+    onPhotoClick: (Photo, Int) -> Unit
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
@@ -126,7 +127,7 @@ private fun PhotoGrid(
 
 @Composable
 private fun PhotoGridItem(
-    photo: UnsplashPhoto,
+    photo: Photo,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {

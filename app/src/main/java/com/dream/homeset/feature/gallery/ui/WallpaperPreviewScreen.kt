@@ -1,4 +1,4 @@
-package com.dream.homeset.feature.gallery
+package com.dream.homeset.feature.gallery.ui
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
@@ -60,9 +60,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
-import com.dream.homeset.core.model.UnsplashPhoto
+import com.dream.homeset.core.domain.model.Photo
+import com.dream.homeset.core.domain.model.WallpaperDestination
+import com.dream.homeset.feature.gallery.viewmodel.WallpaperGalleryViewModel
 import net.engawapg.lib.zoomable.ZoomState
 import net.engawapg.lib.zoomable.rememberZoomState
 import net.engawapg.lib.zoomable.zoomable
@@ -136,7 +139,7 @@ fun WallpaperPreviewRoute(
 
 @Composable
 fun WallpaperPreviewScreen(
-    photo: UnsplashPhoto,
+    photo: Photo,
     onBack: () -> Unit,
     isSettingWallpaper: Boolean = false,
     onSetHome: () -> Unit,
@@ -474,7 +477,7 @@ private fun QuickSetItem(
 
 @Composable
 private fun WallpaperImageContent(
-    photo: UnsplashPhoto,
+    photo: Photo,
     zoomState: ZoomState,
     isEnabled: Boolean = true
 ) {
@@ -495,10 +498,10 @@ private fun WallpaperImageContent(
         modifier = modifier,
         content = {
             when (painter.state) {
-                is coil.compose.AsyncImagePainter.State.Loading -> {
+                is AsyncImagePainter.State.Loading -> {
                     LoadingState()
                 }
-                is coil.compose.AsyncImagePainter.State.Error -> {
+                is AsyncImagePainter.State.Error -> {
                     ErrorState()
                 }
                 else -> {
