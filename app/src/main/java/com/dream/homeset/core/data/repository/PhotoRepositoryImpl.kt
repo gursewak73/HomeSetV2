@@ -4,6 +4,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.dream.homeset.core.data.datasource.UnsplashPagingSource
+import com.dream.homeset.core.data.datasource.CollectionPagingSource
 import com.dream.homeset.core.data.mapper.toDomain
 import com.dream.homeset.core.domain.model.Photo
 import com.dream.homeset.core.domain.repository.PhotoRepository
@@ -21,6 +22,16 @@ class PhotoRepositoryImpl(
                 enablePlaceholders = false
             ),
             pagingSourceFactory = { UnsplashPagingSource(api = api, perPage = pageSize) }
+        ).flow
+    }
+
+    override fun getCollectionsStream(pageSize: Int): Flow<PagingData<com.dream.homeset.core.domain.model.Collection>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = pageSize,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { CollectionPagingSource(api = api, perPage = pageSize) }
         ).flow
     }
 

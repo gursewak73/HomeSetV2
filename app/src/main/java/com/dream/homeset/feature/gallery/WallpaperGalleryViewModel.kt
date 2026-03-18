@@ -39,6 +39,9 @@ class WallpaperGalleryViewModel(
     val photosPagingData: Flow<PagingData<Photo>> =
         getPhotosStreamUseCase().cachedIn(viewModelScope)
 
+    val collectionsPagingData: Flow<PagingData<Collection>> =
+        PhotoRepositoryImpl(NetworkModule.unsplashApi).getCollectionsStream().cachedIn(viewModelScope)
+
     private val _featuredPhoto = MutableStateFlow<Photo?>(null)
     val featuredPhoto: StateFlow<Photo?> = _featuredPhoto.asStateFlow()
 

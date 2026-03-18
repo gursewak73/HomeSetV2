@@ -69,8 +69,8 @@ fun WallpaperGalleryRoute(
     viewModel: WallpaperGalleryViewModel = viewModel()
 ) {
     val photos = viewModel.photosPagingData.collectAsLazyPagingItems()
+    val collections = viewModel.collectionsPagingData.collectAsLazyPagingItems()
     val featuredPhoto by viewModel.featuredPhoto.collectAsStateWithLifecycle()
-    val collections by viewModel.collections.collectAsStateWithLifecycle()
 
     WallpaperGalleryScreen(
         photos = photos,
@@ -93,7 +93,7 @@ fun WallpaperGalleryRoute(
 fun WallpaperGalleryScreen(
     photos: LazyPagingItems<Photo>,
     featuredPhoto: Photo?,
-    collections: List<Collection>,
+    collections: LazyPagingItems<Collection>,
     modifier: Modifier = Modifier,
     onPhotoClick: (Photo, Int) -> Unit,
     onFeaturedClick: (Photo) -> Unit
@@ -181,6 +181,36 @@ private fun ExploreView(
 
         // Photos Grid (Chunked into pairs for LazyColumn)
         val itemCount = photos.itemCount
+
+        // Handle initial load error
+        if (photos.loadState.refresh is LoadState.Error) {
+            item {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No data found",
+                        color = Slate500,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+
+        // Handle empty list after success
+        if (photos.loadState.refresh is LoadState.NotLoading && photos.itemCount == 0) {
+            item {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No wallpapers found", color = Slate500)
+                }
+            }
+        }
+
         items(count = (itemCount + 1) / 2) { rowIndex ->
             Row(
                 modifier = Modifier
@@ -232,34 +262,61 @@ private fun ExploreView(
 
 @Composable
 private fun CollectionsView(
-    collections: List<Collection>
+    collections: LazyPagingItems<Collection>
 ) {
     androidx.compose.foundation.lazy.LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
-        item {
-            SectionHeader(title = "Popular Collections", onSeeAll = {})
+        // Combined Header and View All logic removed as requested
+        
+        // Handle initial load error
+        if (collections.loadState.refresh is LoadState.Error) {
+            item {
+                Box(
+                    modifier = Modifier.fillParentMaxSize().padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No data found",
+                        color = Slate500,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         }
 
-        if (collections.isNotEmpty()) {
-            items(collections.size) { index ->
+        // Handle empty list after success
+        if (collections.loadState.refresh is LoadState.NotLoading && collections.itemCount == 0) {
+            item {
+                Box(
+                    modifier = Modifier.fillParentMaxSize().padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No collections found", color = Slate500)
+                }
+            }
+        }
+
+        items(count = collections.itemCount) { index ->
+            collections[index]?.let { collection ->
                 CollectionCard(
-                    collection = collections[index],
+                    collection = collection,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 )
             }
-        } else {
+        }
+
+        if (collections.loadState.append is LoadState.Loading) {
             item {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No collections found", color = Slate500)
+                    CircularProgressIndicator(color = PrimaryBlue)
                 }
             }
         }
