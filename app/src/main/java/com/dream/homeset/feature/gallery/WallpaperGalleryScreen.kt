@@ -1,22 +1,37 @@
 package com.dream.homeset.feature.gallery
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,18 +39,18 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
-import com.dream.homeset.core.domain.model.Photo
 import com.dream.homeset.core.domain.model.Collection
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dream.homeset.core.domain.model.Photo
+import com.dream.homeset.feature.gallery.ui.ROUTE_WALLPAPER_PREVIEW
 
 const val ROUTE_GALLERY = "gallery"
 
@@ -82,7 +97,6 @@ fun WallpaperGalleryScreen(
 ) {
     Scaffold(
         topBar = { TopBar() },
-        bottomBar = { BottomNav() },
         containerColor = BgDark
     ) { paddingValues ->
         Column(
@@ -126,14 +140,14 @@ private fun TopBar() {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
+        Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
         Text(
             text = "Wallpapers",
             color = Color.White,
             fontSize = 18.sp,
             fontWeight = FontWeight.ExtraBold
         )
-        Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = Color.White)
+        Spacer(modifier = Modifier.size(24.dp))
     }
 }
 
@@ -390,58 +404,3 @@ private fun CollectionCard(collection: Collection) {
     }
 }
 
-@Composable
-private fun BottomNav() {
-    NavigationBar(
-        containerColor = BgDark.copy(alpha = 0.95f),
-        contentColor = Color.White,
-        tonalElevation = 8.dp
-    ) {
-        NavigationBarItem(
-            selected = true,
-            onClick = {},
-            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-            label = { Text("Home", fontSize = 10.sp) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = PrimaryBlue,
-                selectedTextColor = PrimaryBlue,
-                unselectedIconColor = Slate500,
-                unselectedTextColor = Slate500,
-                indicatorColor = Color.Transparent
-            )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = {},
-            icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-            label = { Text("Search", fontSize = 10.sp) },
-            colors = NavigationBarItemDefaults.colors(
-                unselectedIconColor = Slate500,
-                unselectedTextColor = Slate500,
-                indicatorColor = Color.Transparent
-            )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = {},
-            icon = { Icon(Icons.Default.Star, contentDescription = "Collections") },
-            label = { Text("Collections", fontSize = 10.sp) },
-            colors = NavigationBarItemDefaults.colors(
-                unselectedIconColor = Slate500,
-                unselectedTextColor = Slate500,
-                indicatorColor = Color.Transparent
-            )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = {},
-            icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-            label = { Text("Profile", fontSize = 10.sp) },
-            colors = NavigationBarItemDefaults.colors(
-                unselectedIconColor = Slate500,
-                unselectedTextColor = Slate500,
-                indicatorColor = Color.Transparent
-            )
-        )
-    }
-}
