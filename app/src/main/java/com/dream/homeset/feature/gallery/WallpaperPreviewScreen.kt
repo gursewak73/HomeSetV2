@@ -245,28 +245,6 @@ fun WallpaperPreviewScreen(
                     Spacer(modifier = Modifier.size(40.dp))
                 }
 
-                // Central Clock Preview
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 160.dp)
-                        .align(Alignment.TopCenter)
-                ) {
-                    Text(
-                        text = stringResource(R.string.sample_time),
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontSize = 72.sp,
-                        fontWeight = FontWeight.Light,
-                        letterSpacing = (-1).sp
-                    )
-                    Text(
-                        text = stringResource(R.string.sample_date),
-                        color = Color.White.copy(alpha = 0.8f),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
 
                 // Bottom Controls
                 Box(

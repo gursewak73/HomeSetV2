@@ -42,6 +42,7 @@ val PrimaryBlue = Color(0xFF0066FF)
 val BgDark = Color(0xFF141121)
 val Slate300 = Color(0xFFCBD5E1)
 val Slate500 = Color(0xFF64748B)
+val GlassBg = Color(0x99141121)
 
 @Composable
 fun TopBar(
@@ -111,34 +112,36 @@ fun HeroBanner(
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(16.dp)
+                .padding(20.dp)
         ) {
             Surface(
-                color = PrimaryBlue,
+                color = GlassBg,
                 shape = CircleShape,
-                modifier = Modifier.padding(bottom = 8.dp)
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
+                modifier = Modifier.padding(bottom = 12.dp)
             ) {
                 Text(
                     text = stringResource(R.string.label_featured),
-                    color = Color.White,
-                    fontSize = 10.sp,
+                    color = Color.White.copy(alpha = 0.9f),
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    letterSpacing = 1.sp,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
                 )
             }
             Text(
                 text = stringResource(R.string.hero_title),
                 color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.ExtraBold
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.5).sp
             )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = stringResource(R.string.hero_subtitle), color = Slate300, fontSize = 14.sp)
-            }
+            Text(
+                text = stringResource(R.string.hero_subtitle),
+                color = Slate300,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }
