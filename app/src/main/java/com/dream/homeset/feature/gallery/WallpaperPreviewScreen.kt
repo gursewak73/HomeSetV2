@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -388,7 +389,7 @@ fun WallpaperPreviewScreen(
                                 )
                                 QuickSetItem(
                                     title = stringResource(R.string.option_both),
-                                    icon = Icons.Default.Phone,
+                                    icon = Icons.Default.Settings,
                                     isHighlighted = selectedDestination == WallpaperDestination.BOTH,
                                     onClick = { selectedDestination = WallpaperDestination.BOTH },
                                     isEnabled = !isSettingWallpaper
