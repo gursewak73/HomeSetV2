@@ -21,7 +21,7 @@ class CollectionPagingSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Collection> {
         val page = params.key ?: 1
         return try {
-            val response = api.getFeaturedCollections(page = page, perPage = perPage)
+            val response = api.getCollections(page = page, perPage = perPage)
             LoadResult.Page(
                 data = response.map { it.toDomain() },
                 prevKey = if (page == 1) null else page - 1,

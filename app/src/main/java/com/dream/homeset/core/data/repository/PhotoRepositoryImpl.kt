@@ -5,6 +5,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.dream.homeset.core.data.datasource.UnsplashPagingSource
 import com.dream.homeset.core.data.datasource.CollectionPagingSource
+import com.dream.homeset.core.data.datasource.CollectionPhotosPagingSource
 import com.dream.homeset.core.data.mapper.toDomain
 import com.dream.homeset.core.domain.model.Photo
 import com.dream.homeset.core.domain.repository.PhotoRepository
@@ -35,6 +36,16 @@ class PhotoRepositoryImpl(
         ).flow
     }
 
+    override fun getCollectionPhotosStream(collectionId: String, pageSize: Int): Flow<PagingData<Photo>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = pageSize,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { CollectionPhotosPagingSource(api = api, collectionId = collectionId, perPage = pageSize) }
+        ).flow
+    }
+
     override suspend fun getFeaturedPhoto(): Result<Photo> {
         return try {
             val response = api.getRandomPhoto(featured = true, count = 1)
@@ -47,7 +58,7 @@ class PhotoRepositoryImpl(
 
     override suspend fun getCollections(): Result<List<com.dream.homeset.core.domain.model.Collection>> {
         return try {
-            val response = api.getFeaturedCollections()
+            val response = api.getCollections()
             Result.success(response.map { it.toDomain() })
         } catch (e: Exception) {
             Result.failure<List<com.dream.homeset.core.domain.model.Collection>>(e)

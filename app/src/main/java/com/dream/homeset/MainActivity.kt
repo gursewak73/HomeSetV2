@@ -12,8 +12,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.dream.homeset.feature.gallery.ROUTE_GALLERY
+import com.dream.homeset.feature.gallery.ROUTE_COLLECTION_DETAIL
 import com.dream.homeset.feature.gallery.ui.ROUTE_WALLPAPER_PREVIEW
 import com.dream.homeset.feature.gallery.WallpaperGalleryRoute
+import com.dream.homeset.feature.gallery.CollectionDetailRoute
 import com.dream.homeset.feature.gallery.WallpaperGalleryViewModel
 import com.dream.homeset.feature.gallery.ui.WallpaperPreviewRoute
 import com.dream.homeset.ui.theme.HomeSetTheme
@@ -36,6 +38,16 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 viewModel = viewModel,
                                 onCloseClick = { finish() }
+                            )
+                        }
+                        composable(ROUTE_COLLECTION_DETAIL) {
+                            CollectionDetailRoute(
+                                navController = navController,
+                                viewModel = viewModel,
+                                onBack = {
+                                    viewModel.clearSelectedCollection()
+                                    navController.popBackStack()
+                                }
                             )
                         }
                         composable(ROUTE_WALLPAPER_PREVIEW) {

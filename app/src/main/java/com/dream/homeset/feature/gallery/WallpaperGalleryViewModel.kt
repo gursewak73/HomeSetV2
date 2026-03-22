@@ -13,13 +13,17 @@ import com.dream.homeset.core.domain.usecase.GetPhotosStreamUseCase
 import com.dream.homeset.core.domain.usecase.SetWallpaperUseCase
 import com.dream.homeset.core.domain.usecase.GetFeaturedPhotoUseCase
 import com.dream.homeset.core.domain.usecase.GetCollectionsUseCase
+import com.dream.homeset.core.domain.usecase.GetCollectionPhotosStreamUseCase
 import com.dream.homeset.core.network.NetworkModule
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import android.content.Context
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 class WallpaperGalleryViewModel(
     private val getPhotosStreamUseCase: GetPhotosStreamUseCase = GetPhotosStreamUseCase(
@@ -29,6 +33,9 @@ class WallpaperGalleryViewModel(
         PhotoRepositoryImpl(NetworkModule.unsplashApi)
     ),
     private val getCollectionsUseCase: GetCollectionsUseCase = GetCollectionsUseCase(
+        PhotoRepositoryImpl(NetworkModule.unsplashApi)
+    ),
+    private val getCollectionPhotosStreamUseCase: GetCollectionPhotosStreamUseCase = GetCollectionPhotosStreamUseCase(
         PhotoRepositoryImpl(NetworkModule.unsplashApi)
     ),
     private val setWallpaperUseCaseFactory: (Context) -> SetWallpaperUseCase = { context ->
@@ -41,6 +48,19 @@ class WallpaperGalleryViewModel(
 
     val collectionsPagingData: Flow<PagingData<Collection>> =
         PhotoRepositoryImpl(NetworkModule.unsplashApi).getCollectionsStream().cachedIn(viewModelScope)
+
+    private val _selectedCollection = MutableStateFlow<Collection?>(null)
+    val selectedCollection: StateFlow<Collection?> = _selectedCollection.asStateFlow()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val collectionPhotosPagingData: Flow<PagingData<Photo>> =
+        _selectedCollection.flatMapLatest { collection ->
+            if (collection != null) {
+                getCollectionPhotosStreamUseCase(collection.id).cachedIn(viewModelScope)
+            } else {
+                flowOf(PagingData.empty())
+            }
+        }
 
     private val _featuredPhoto = MutableStateFlow<Photo?>(null)
     val featuredPhoto: StateFlow<Photo?> = _featuredPhoto.asStateFlow()
@@ -96,6 +116,14 @@ class WallpaperGalleryViewModel(
 
     fun setSelectedPhoto(photo: Photo) {
         _selectedPhoto.value = photo
+    }
+
+    fun selectCollection(collection: Collection) {
+        _selectedCollection.value = collection
+    }
+
+    fun clearSelectedCollection() {
+        _selectedCollection.value = null
     }
 
     fun clearSelectedPhoto() {
