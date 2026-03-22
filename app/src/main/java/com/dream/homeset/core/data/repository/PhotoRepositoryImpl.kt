@@ -7,13 +7,22 @@ import com.dream.homeset.core.data.datasource.UnsplashPagingSource
 import com.dream.homeset.core.data.datasource.CollectionPagingSource
 import com.dream.homeset.core.data.datasource.CollectionPhotosPagingSource
 import com.dream.homeset.core.data.mapper.toDomain
+import com.dream.homeset.core.data.local.dao.FavoritePhotoDao
+import com.dream.homeset.core.data.local.entity.toDomainModel
+import com.dream.homeset.core.data.local.entity.toEntity
 import com.dream.homeset.core.domain.model.Photo
 import com.dream.homeset.core.domain.repository.PhotoRepository
 import com.dream.homeset.core.network.UnsplashApiService
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import com.dream.homeset.core.domain.model.Collection
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class PhotoRepositoryImpl(
-    private val api: UnsplashApiService
+    private val api: UnsplashApiService,
+    private val favoriteDao: FavoritePhotoDao
 ) : PhotoRepository {
 
     override fun getPhotosStream(pageSize: Int): Flow<PagingData<Photo>> {
@@ -56,12 +65,33 @@ class PhotoRepositoryImpl(
         }
     }
 
-    override suspend fun getCollections(): Result<List<com.dream.homeset.core.domain.model.Collection>> {
+    override suspend fun getCollections(): Result<List<Collection>> {
         return try {
             val response = api.getCollections()
             Result.success(response.map { it.toDomain() })
         } catch (e: Exception) {
-            Result.failure<List<com.dream.homeset.core.domain.model.Collection>>(e)
+            Result.failure<List<Collection>>(e)
+        }
+    }
+
+    override fun getAllFavoritePhotos(): Flow<List<Photo>> {
+        return favoriteDao.getAllFavorites().map { entities ->
+            entities.map { it.toDomainModel() }
+        }
+    }
+
+    override fun isFavorite(id: String): Flow<Boolean> {
+        return favoriteDao.isFavorite(id)
+    }
+
+    override suspend fun toggleFavorite(photo: Photo) {
+        withContext(Dispatchers.IO) {
+            val isFav = favoriteDao.isFavorite(photo.id).first()
+            if (isFav) {
+                favoriteDao.deleteById(photo.id)
+            } else {
+                favoriteDao.insertFavorite(photo.toEntity())
+            }
         }
     }
 }

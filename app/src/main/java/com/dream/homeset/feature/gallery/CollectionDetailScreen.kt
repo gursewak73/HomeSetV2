@@ -46,11 +46,14 @@ fun CollectionDetailRoute(
 ) {
     val selectedCollection by viewModel.selectedCollection.collectAsStateWithLifecycle()
     val collectionPhotos = viewModel.collectionPhotosPagingData.collectAsLazyPagingItems()
+    val favoritePhotos by viewModel.favoritePhotos.collectAsStateWithLifecycle(emptyList())
 
     if (selectedCollection != null) {
         CollectionDetailView(
             collection = selectedCollection!!,
             photos = collectionPhotos,
+            favoritePhotos = favoritePhotos,
+            viewModel = viewModel,
             onPhotoClick = { photo, index ->
                 val photoList = (0 until collectionPhotos.itemCount).mapNotNull { collectionPhotos[it] }
                 viewModel.setPreviewData(photoList, index)
@@ -65,6 +68,8 @@ fun CollectionDetailRoute(
 private fun CollectionDetailView(
     collection: Collection,
     photos: LazyPagingItems<Photo>,
+    favoritePhotos: List<Photo>,
+    viewModel: WallpaperGalleryViewModel,
     onPhotoClick: (Photo, Int) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -136,8 +141,10 @@ private fun CollectionDetailView(
                 photos[leftIndex]?.let { photo ->
                     PhotoGridItem(
                         photo = photo,
+                        isFavorite = favoritePhotos.any { it.id == photo.id },
                         modifier = Modifier.weight(1f),
-                        onClick = { onPhotoClick(photo, leftIndex) }
+                        onClick = { onPhotoClick(photo, leftIndex) },
+                        onFavoriteClick = { viewModel.toggleFavorite(photo) }
                     )
                 } ?: Spacer(modifier = Modifier.weight(1f))
 
@@ -145,8 +152,10 @@ private fun CollectionDetailView(
                     photos[rightIndex]?.let { photo ->
                         PhotoGridItem(
                             photo = photo,
+                            isFavorite = favoritePhotos.any { it.id == photo.id },
                             modifier = Modifier.weight(1f),
-                            onClick = { onPhotoClick(photo, rightIndex) }
+                            onClick = { onPhotoClick(photo, rightIndex) },
+                            onFavoriteClick = { viewModel.toggleFavorite(photo) }
                         )
                     } ?: Spacer(modifier = Modifier.weight(1f))
                 } else {

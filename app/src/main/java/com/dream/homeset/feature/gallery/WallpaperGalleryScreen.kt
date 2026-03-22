@@ -62,11 +62,14 @@ fun WallpaperGalleryRoute(
     val photos = viewModel.photosPagingData.collectAsLazyPagingItems()
     val collections = viewModel.collectionsPagingData.collectAsLazyPagingItems()
     val featuredPhoto by viewModel.featuredPhoto.collectAsStateWithLifecycle()
+    val favoritePhotos by viewModel.favoritePhotos.collectAsStateWithLifecycle(emptyList())
 
     WallpaperGalleryScreen(
         photos = photos,
         featuredPhoto = featuredPhoto,
         collections = collections,
+        favoritePhotos = favoritePhotos,
+        viewModel = viewModel,
         modifier = modifier,
         onCloseClick = onCloseClick,
         onPhotoClick = { photo, index ->
@@ -90,6 +93,8 @@ fun WallpaperGalleryScreen(
     photos: LazyPagingItems<Photo>,
     featuredPhoto: Photo?,
     collections: LazyPagingItems<Collection>,
+    favoritePhotos: List<Photo>,
+    viewModel: WallpaperGalleryViewModel,
     modifier: Modifier = Modifier,
     onCloseClick: () -> Unit,
     onPhotoClick: (Photo, Int) -> Unit,
@@ -119,20 +124,30 @@ fun WallpaperGalleryScreen(
                 label = "TabContent",
                 modifier = Modifier.weight(1f)
             ) { index ->
-                if (index == 0) {
-                    // Explore View
-                    ExploreView(
-                        photos = photos,
-                        featuredPhoto = featuredPhoto,
-                        onPhotoClick = onPhotoClick,
-                        onFeaturedClick = onFeaturedClick
-                    )
-                } else {
-                    // Collections View
-                    CollectionsView(
-                        collections = collections,
-                        onCollectionClick = onCollectionClick
-                    )
+                when (index) {
+                    0 -> {
+                        ExploreView(
+                            photos = photos,
+                            featuredPhoto = featuredPhoto,
+                            onPhotoClick = onPhotoClick,
+                            onFeaturedClick = onFeaturedClick,
+                            viewModel = viewModel,
+                            favoritePhotos = favoritePhotos
+                        )
+                    }
+                    1 -> {
+                        CollectionsView(
+                            collections = collections,
+                            onCollectionClick = onCollectionClick
+                        )
+                    }
+                    2 -> {
+                        FavoritesView(
+                            favoritePhotos = favoritePhotos,
+                            onPhotoClick = onPhotoClick,
+                            viewModel = viewModel
+                        )
+                    }
                 }
             }
         }
@@ -144,7 +159,9 @@ private fun ExploreView(
     photos: LazyPagingItems<Photo>,
     featuredPhoto: Photo?,
     onPhotoClick: (Photo, Int) -> Unit,
-    onFeaturedClick: (Photo) -> Unit
+    onFeaturedClick: (Photo) -> Unit,
+    viewModel: WallpaperGalleryViewModel,
+    favoritePhotos: List<Photo>
 ) {
     androidx.compose.foundation.lazy.LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -224,8 +241,10 @@ private fun ExploreView(
                 photos[leftIndex]?.let { photo ->
                     PhotoGridItem(
                         photo = photo,
+                        isFavorite = favoritePhotos.any { it.id == photo.id },
                         modifier = Modifier.weight(1f),
-                        onClick = { onPhotoClick(photo, leftIndex) }
+                        onClick = { onPhotoClick(photo, leftIndex) },
+                        onFavoriteClick = { viewModel.toggleFavorite(photo) }
                     )
                 } ?: Spacer(modifier = Modifier.weight(1f))
 
@@ -234,8 +253,10 @@ private fun ExploreView(
                     photos[rightIndex]?.let { photo ->
                         PhotoGridItem(
                             photo = photo,
+                            isFavorite = favoritePhotos.any { it.id == photo.id },
                             modifier = Modifier.weight(1f),
-                            onClick = { onPhotoClick(photo, rightIndex) }
+                            onClick = { onPhotoClick(photo, rightIndex) },
+                            onFavoriteClick = { viewModel.toggleFavorite(photo) }
                         )
                     } ?: Spacer(modifier = Modifier.weight(1f))
                 } else {
@@ -389,6 +410,68 @@ private fun CollectionCard(
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium
             )
+        }
+    }
+}
+
+@Composable
+private fun FavoritesView(
+    favoritePhotos: List<Photo>,
+    onPhotoClick: (Photo, Int) -> Unit,
+    viewModel: WallpaperGalleryViewModel
+) {
+    if (favoritePhotos.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = stringResource(R.string.msg_no_favorites),
+                color = Slate500,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    } else {
+        androidx.compose.foundation.lazy.LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)
+        ) {
+            items(count = (favoritePhotos.size + 1) / 2) { rowIndex ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    val leftIndex = rowIndex * 2
+                    val rightIndex = rowIndex * 2 + 1
+                    
+                    // Left Photo
+                    val leftPhoto = favoritePhotos[leftIndex]
+                    PhotoGridItem(
+                        photo = leftPhoto,
+                        isFavorite = true,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onPhotoClick(leftPhoto, leftIndex) },
+                        onFavoriteClick = { viewModel.toggleFavorite(leftPhoto) }
+                    )
+
+                    // Right Photo
+                    if (rightIndex < favoritePhotos.size) {
+                        val rightPhoto = favoritePhotos[rightIndex]
+                        PhotoGridItem(
+                            photo = rightPhoto,
+                            isFavorite = true,
+                            modifier = Modifier.weight(1f),
+                            onClick = { onPhotoClick(rightPhoto, rightIndex) },
+                            onFavoriteClick = { viewModel.toggleFavorite(rightPhoto) }
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
         }
     }
 }

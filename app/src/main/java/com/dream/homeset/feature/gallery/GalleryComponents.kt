@@ -188,14 +188,38 @@ fun TabNavigation(
                 )
             }
         }
+
+        // Favorites Tab
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.clickable { onTabSelected(2) }
+        ) {
+            Text(
+                text = stringResource(R.string.tab_favorites),
+                color = if (selectedTabIndex == 2) PrimaryBlue else Slate500,
+                fontSize = 14.sp,
+                fontWeight = if (selectedTabIndex == 2) FontWeight.ExtraBold else FontWeight.Bold,
+                modifier = Modifier.padding(vertical = 12.dp)
+            )
+            if (selectedTabIndex == 2) {
+                Box(
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(2.dp)
+                        .background(PrimaryBlue)
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun PhotoGridItem(
     photo: Photo,
+    isFavorite: Boolean = false,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onFavoriteClick: (() -> Unit)? = null
 ) {
     Box(
         modifier = modifier
@@ -215,13 +239,14 @@ fun PhotoGridItem(
                 .padding(8.dp)
                 .size(32.dp)
                 .clip(CircleShape)
-                .background(Color.Black.copy(alpha = 0.4f)),
+                .background(Color.Black.copy(alpha = 0.4f))
+                .clickable { onFavoriteClick?.invoke() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.Favorite,
                 contentDescription = null,
-                tint = Color.White,
+                tint = if (isFavorite) Color.Red else Color.White,
                 modifier = Modifier.size(16.dp)
             )
         }

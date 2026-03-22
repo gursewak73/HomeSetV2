@@ -29,6 +29,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Home
@@ -96,6 +98,7 @@ fun WallpaperPreviewRoute(
     val previewIndex by viewModel.previewIndex.collectAsStateWithLifecycle(initialValue = 0)
     val isSettingWallpaper by viewModel.isSettingWallpaper.collectAsStateWithLifecycle(initialValue = false)
     val wallpaperSetSuccess by viewModel.wallpaperSetSuccess.collectAsStateWithLifecycle(initialValue = false)
+    val favoritePhotos by viewModel.favoritePhotos.collectAsStateWithLifecycle(initialValue = emptyList())
     val context = LocalContext.current
 
     val wallpaperSuccessMsg = stringResource(R.string.msg_wallpaper_set_success)
@@ -119,6 +122,8 @@ fun WallpaperPreviewRoute(
             val photo = previewPhotos[page]
             WallpaperPreviewScreen(
                 photo = photo,
+                isFavorite = favoritePhotos.any { it.id == photo.id },
+                onFavoriteClick = { viewModel.toggleFavorite(photo) },
                 onBack = onBack,
                 isSettingWallpaper = isSettingWallpaper,
                 onSetHome = { viewModel.setWallpaper(context, photo, WallpaperDestination.HOME) },
@@ -148,6 +153,8 @@ fun WallpaperPreviewRoute(
 @Composable
 fun WallpaperPreviewScreen(
     photo: Photo,
+    isFavorite: Boolean,
+    onFavoriteClick: () -> Unit,
     onBack: () -> Unit,
     isSettingWallpaper: Boolean = false,
     onSetHome: () -> Unit,
@@ -326,6 +333,19 @@ fun WallpaperPreviewScreen(
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
                                     Text(stringResource(R.string.btn_set_wallpaper), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                }
+
+                                IconButton(
+                                    onClick = onFavoriteClick,
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                                ) {
+                                    Icon(
+                                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                        contentDescription = null,
+                                        tint = if (isFavorite) Color.Red else Color.White
+                                    )
                                 }
 
                                 IconButton(

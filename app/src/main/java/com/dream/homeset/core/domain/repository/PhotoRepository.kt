@@ -11,4 +11,9 @@ interface PhotoRepository {
     fun getCollectionPhotosStream(collectionId: String, pageSize: Int = 30): Flow<PagingData<Photo>>
     suspend fun getFeaturedPhoto(): Result<Photo>
     suspend fun getCollections(): Result<List<Collection>>
+    
+    // Favorites
+    fun getAllFavoritePhotos(): Flow<List<Photo>>
+    fun isFavorite(id: String): Flow<Boolean>
+    suspend fun toggleFavorite(photo: Photo)
 }

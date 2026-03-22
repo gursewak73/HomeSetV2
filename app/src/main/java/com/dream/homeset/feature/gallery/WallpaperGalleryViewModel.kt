@@ -9,45 +9,32 @@ import com.dream.homeset.core.data.repository.WallpaperRepositoryImpl
 import com.dream.homeset.core.domain.model.Photo
 import com.dream.homeset.core.domain.model.Collection
 import com.dream.homeset.core.domain.model.WallpaperDestination
-import com.dream.homeset.core.domain.usecase.GetPhotosStreamUseCase
-import com.dream.homeset.core.domain.usecase.SetWallpaperUseCase
-import com.dream.homeset.core.domain.usecase.GetFeaturedPhotoUseCase
-import com.dream.homeset.core.domain.usecase.GetCollectionsUseCase
-import com.dream.homeset.core.domain.usecase.GetCollectionPhotosStreamUseCase
+import com.dream.homeset.core.domain.usecase.*
 import com.dream.homeset.core.network.NetworkModule
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import android.content.Context
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 class WallpaperGalleryViewModel(
-    private val getPhotosStreamUseCase: GetPhotosStreamUseCase = GetPhotosStreamUseCase(
-        PhotoRepositoryImpl(NetworkModule.unsplashApi)
-    ),
-    private val getFeaturedPhotoUseCase: GetFeaturedPhotoUseCase = GetFeaturedPhotoUseCase(
-        PhotoRepositoryImpl(NetworkModule.unsplashApi)
-    ),
-    private val getCollectionsUseCase: GetCollectionsUseCase = GetCollectionsUseCase(
-        PhotoRepositoryImpl(NetworkModule.unsplashApi)
-    ),
-    private val getCollectionPhotosStreamUseCase: GetCollectionPhotosStreamUseCase = GetCollectionPhotosStreamUseCase(
-        PhotoRepositoryImpl(NetworkModule.unsplashApi)
-    ),
-    private val setWallpaperUseCaseFactory: (Context) -> SetWallpaperUseCase = { context ->
-        SetWallpaperUseCase(WallpaperRepositoryImpl(context))
-    }
+    private val getPhotosStreamUseCase: GetPhotosStreamUseCase,
+    private val getFeaturedPhotoUseCase: GetFeaturedPhotoUseCase,
+    private val getCollectionsUseCase: GetCollectionsUseCase,
+    private val getCollectionPhotosStreamUseCase: GetCollectionPhotosStreamUseCase,
+    private val getFavoritePhotosUseCase: GetFavoritePhotosUseCase,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val isFavoriteUseCase: IsFavoriteUseCase,
+    private val setWallpaperUseCaseFactory: (Context) -> SetWallpaperUseCase
 ) : ViewModel() {
 
     val photosPagingData: Flow<PagingData<Photo>> =
         getPhotosStreamUseCase().cachedIn(viewModelScope)
 
     val collectionsPagingData: Flow<PagingData<Collection>> =
-        PhotoRepositoryImpl(NetworkModule.unsplashApi).getCollectionsStream().cachedIn(viewModelScope)
+        getCollectionsUseCase.invokeStream().cachedIn(viewModelScope)
+        
+    val favoritePhotos: Flow<List<Photo>> = 
+        getFavoritePhotosUseCase()
 
     private val _selectedCollection = MutableStateFlow<Collection?>(null)
     val selectedCollection: StateFlow<Collection?> = _selectedCollection.asStateFlow()
@@ -146,6 +133,37 @@ class WallpaperGalleryViewModel(
             
             _wallpaperSetSuccess.value = result.isSuccess
             _isSettingWallpaper.value = false
+        }
+    }
+
+    fun isFavoritePhoto(id: String): Flow<Boolean> {
+        return isFavoriteUseCase(id)
+    }
+
+    fun toggleFavorite(photo: Photo) {
+        viewModelScope.launch {
+            toggleFavoriteUseCase(photo)
+        }
+    }
+
+    companion object {
+        fun provideFactory(
+            context: Context
+        ): androidx.lifecycle.ViewModelProvider.Factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                val repository = com.dream.homeset.core.di.DependencyContainer.getPhotoRepository(context)
+                return WallpaperGalleryViewModel(
+                    getPhotosStreamUseCase = GetPhotosStreamUseCase(repository),
+                    getFeaturedPhotoUseCase = GetFeaturedPhotoUseCase(repository),
+                    getCollectionsUseCase = GetCollectionsUseCase(repository),
+                    getCollectionPhotosStreamUseCase = GetCollectionPhotosStreamUseCase(repository),
+                    getFavoritePhotosUseCase = GetFavoritePhotosUseCase(repository),
+                    toggleFavoriteUseCase = ToggleFavoriteUseCase(repository),
+                    isFavoriteUseCase = IsFavoriteUseCase(repository),
+                    setWallpaperUseCaseFactory = { ctx -> SetWallpaperUseCase(WallpaperRepositoryImpl(ctx)) }
+                ) as T
+            }
         }
     }
 }

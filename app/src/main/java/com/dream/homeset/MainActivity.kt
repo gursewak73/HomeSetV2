@@ -27,7 +27,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             HomeSetTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    val viewModel = viewModel<WallpaperGalleryViewModel>()
+                    val viewModel: WallpaperGalleryViewModel = viewModel(
+                        factory = WallpaperGalleryViewModel.provideFactory(this@MainActivity)
+                    )
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,

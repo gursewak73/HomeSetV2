@@ -3,6 +3,7 @@
     <string name="label_wallpapers">Wallpapers</string>
     <string name="tab_explore">Explore</string>
     <string name="tab_collections">Collections</string>
+    <string name="tab_favorites">Favorites</string>
     <string name="header_trending">Trending Now</string>
     <string name="btn_view_all">VIEW ALL</string>
     <string name="label_featured">FEATURED</string>
@@ -11,6 +12,7 @@
     <string name="msg_no_data">No data found</string>
     <string name="msg_no_wallpapers">No wallpapers found</string>
     <string name="msg_no_collections">No collections found</string>
+    <string name="msg_no_favorites">No favorite wallpapers yet</string>
     <string name="format_wallpapers_count">%d Wallpapers</string>
     <string name="msg_failed_load_photos">Failed to load photos</string>
     <string name="desc_back">Back</string>
