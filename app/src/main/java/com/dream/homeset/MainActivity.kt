@@ -18,6 +18,8 @@ import com.dream.homeset.feature.gallery.WallpaperGalleryRoute
 import com.dream.homeset.feature.gallery.CollectionDetailRoute
 import com.dream.homeset.feature.gallery.WallpaperGalleryViewModel
 import com.dream.homeset.feature.gallery.ui.WallpaperPreviewRoute
+import com.dream.homeset.feature.gallery.ROUTE_FAVORITES
+import com.dream.homeset.feature.gallery.FavoritePhotosRoute
 import com.dream.homeset.ui.theme.HomeSetTheme
 
 class MainActivity : ComponentActivity() {
@@ -59,6 +61,13 @@ class MainActivity : ComponentActivity() {
                                     viewModel.clearSelectedPhoto()
                                     navController.popBackStack()
                                 }
+                            )
+                        }
+                        composable(ROUTE_FAVORITES) {
+                            FavoritePhotosRoute(
+                                navController = navController,
+                                viewModel = viewModel,
+                                onBack = { navController.popBackStack() }
                             )
                         }
                     }

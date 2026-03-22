@@ -84,6 +84,9 @@ fun WallpaperGalleryRoute(
         onCollectionClick = { collection ->
             viewModel.selectCollection(collection)
             navController.navigate(ROUTE_COLLECTION_DETAIL)
+        },
+        onFavoriteClick = {
+            navController.navigate(ROUTE_FAVORITES)
         }
     )
 }
@@ -99,12 +102,18 @@ fun WallpaperGalleryScreen(
     onCloseClick: () -> Unit,
     onPhotoClick: (Photo, Int) -> Unit,
     onFeaturedClick: (Photo) -> Unit,
-    onCollectionClick: (Collection) -> Unit
+    onCollectionClick: (Collection) -> Unit,
+    onFavoriteClick: () -> Unit
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     Scaffold(
-        topBar = { TopBar(onCloseClick = onCloseClick) },
+        topBar = { 
+            TopBar(
+                onCloseClick = onCloseClick,
+                onFavoriteClick = onFavoriteClick
+            ) 
+        },
         containerColor = BgDark
     ) { paddingValues ->
         Column(
@@ -139,13 +148,6 @@ fun WallpaperGalleryScreen(
                         CollectionsView(
                             collections = collections,
                             onCollectionClick = onCollectionClick
-                        )
-                    }
-                    2 -> {
-                        FavoritesView(
-                            favoritePhotos = favoritePhotos,
-                            onPhotoClick = onPhotoClick,
-                            viewModel = viewModel
                         )
                     }
                 }
@@ -414,65 +416,4 @@ private fun CollectionCard(
     }
 }
 
-@Composable
-private fun FavoritesView(
-    favoritePhotos: List<Photo>,
-    onPhotoClick: (Photo, Int) -> Unit,
-    viewModel: WallpaperGalleryViewModel
-) {
-    if (favoritePhotos.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(R.string.msg_no_favorites),
-                color = Slate500,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
-    } else {
-        androidx.compose.foundation.lazy.LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)
-        ) {
-            items(count = (favoritePhotos.size + 1) / 2) { rowIndex ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    val leftIndex = rowIndex * 2
-                    val rightIndex = rowIndex * 2 + 1
-                    
-                    // Left Photo
-                    val leftPhoto = favoritePhotos[leftIndex]
-                    PhotoGridItem(
-                        photo = leftPhoto,
-                        isFavorite = true,
-                        modifier = Modifier.weight(1f),
-                        onClick = { onPhotoClick(leftPhoto, leftIndex) },
-                        onFavoriteClick = { viewModel.toggleFavorite(leftPhoto) }
-                    )
-
-                    // Right Photo
-                    if (rightIndex < favoritePhotos.size) {
-                        val rightPhoto = favoritePhotos[rightIndex]
-                        PhotoGridItem(
-                            photo = rightPhoto,
-                            isFavorite = true,
-                            modifier = Modifier.weight(1f),
-                            onClick = { onPhotoClick(rightPhoto, rightIndex) },
-                            onFavoriteClick = { viewModel.toggleFavorite(rightPhoto) }
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                }
-            }
-        }
-    }
-}
 

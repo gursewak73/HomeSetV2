@@ -44,7 +44,11 @@ val Slate300 = Color(0xFFCBD5E1)
 val Slate500 = Color(0xFF64748B)
 
 @Composable
-fun TopBar(onCloseClick: () -> Unit) {
+fun TopBar(
+    onCloseClick: () -> Unit,
+    onFavoriteClick: () -> Unit,
+    isFavoriteSelected: Boolean = false
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -66,7 +70,12 @@ fun TopBar(onCloseClick: () -> Unit) {
             fontSize = 18.sp,
             fontWeight = FontWeight.ExtraBold
         )
-        Spacer(modifier = Modifier.size(24.dp))
+        Icon(
+            Icons.Default.Favorite,
+            contentDescription = stringResource(R.string.tab_favorites),
+            tint = if (isFavoriteSelected) Color.Red else Color.White,
+            modifier = Modifier.clickable(onClick = onFavoriteClick)
+        )
     }
 }
 
@@ -189,27 +198,7 @@ fun TabNavigation(
             }
         }
 
-        // Favorites Tab
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.clickable { onTabSelected(2) }
-        ) {
-            Text(
-                text = stringResource(R.string.tab_favorites),
-                color = if (selectedTabIndex == 2) PrimaryBlue else Slate500,
-                fontSize = 14.sp,
-                fontWeight = if (selectedTabIndex == 2) FontWeight.ExtraBold else FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 12.dp)
-            )
-            if (selectedTabIndex == 2) {
-                Box(
-                    modifier = Modifier
-                        .width(40.dp)
-                        .height(2.dp)
-                        .background(PrimaryBlue)
-                )
-            }
-        }
+
     }
 }
 
