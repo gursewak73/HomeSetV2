@@ -78,7 +78,7 @@ fun WallpaperGalleryRoute(
             navController.navigate(ROUTE_WALLPAPER_PREVIEW)
         },
         onFeaturedClick = { photo ->
-            viewModel.setSelectedPhoto(photo)
+            viewModel.setPreviewData(listOf(photo), 0)
             navController.navigate(ROUTE_WALLPAPER_PREVIEW)
         },
         onCollectionClick = { collection ->
