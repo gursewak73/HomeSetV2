@@ -150,7 +150,7 @@ fun WallpaperPreviewScreen(
     onSetBoth: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    var selectedDestination by remember { mutableStateOf<WallpaperDestination?>(null) }
+    var selectedDestination by remember { mutableStateOf<WallpaperDestination?>(WallpaperDestination.BOTH) }
     var isUiVisible by remember { mutableStateOf(true) }
     val zoomState = rememberZoomState()
 
@@ -403,8 +403,8 @@ fun WallpaperPreviewScreen(
                                     .fillMaxWidth()
                                     .height(56.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = PrimaryBlue,
-                                    contentColor = Color.White
+                                    containerColor = Color.White,
+                                    contentColor = Color.Black
                                 ),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
@@ -464,8 +464,8 @@ private fun QuickSetItem(
     onClick: () -> Unit,
     isEnabled: Boolean
 ) {
-    val bgColor = if (isHighlighted) PrimaryBlue.copy(alpha = 0.2f) else Color.White.copy(alpha = 0.05f)
-    val borderColor = if (isHighlighted) PrimaryBlue.copy(alpha = 0.3f) else Color.Transparent
+    val bgColor = Color.White.copy(alpha = 0.05f)
+    val borderColor = if (isHighlighted) Color.White else Color.Transparent
     val txtColor = Color.White
 
     Row(
@@ -496,7 +496,7 @@ private fun QuickSetItem(
             Icon(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = null,
-                tint = PrimaryBlue,
+                tint = Color.White,
                 modifier = Modifier.size(24.dp)
             )
         } else {
