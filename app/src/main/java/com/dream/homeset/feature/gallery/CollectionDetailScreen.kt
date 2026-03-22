@@ -19,6 +19,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.dream.homeset.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -85,7 +87,7 @@ private fun CollectionDetailView(
                 ) {
                     Icon(
                         Icons.Default.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.desc_back),
                         tint = Color.White,
                         modifier = Modifier
                             .size(24.dp)
@@ -100,7 +102,7 @@ private fun CollectionDetailView(
                             fontWeight = FontWeight.ExtraBold
                         )
                         Text(
-                            text = "${collection.totalPhotos} Wallpapers",
+                            text = stringResource(R.string.format_wallpapers_count, collection.totalPhotos),
                             color = Slate500,
                             fontSize = 12.sp
                         )
@@ -116,7 +118,7 @@ private fun CollectionDetailView(
                     modifier = Modifier.fillMaxWidth().padding(32.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Failed to load photos", color = Slate500)
+                    Text(stringResource(R.string.msg_failed_load_photos), color = Slate500)
                 }
             }
         }

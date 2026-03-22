@@ -20,6 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.dream.homeset.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -171,7 +173,7 @@ private fun ExploreView(
         // Trending Header
         item {
             SectionHeader(
-                title = "Trending Now",
+                title = stringResource(R.string.header_trending),
                 onSeeAll = null
             )
         }
@@ -187,7 +189,7 @@ private fun ExploreView(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No data found",
+                        text = stringResource(R.string.msg_no_data),
                         color = Slate500,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
@@ -203,7 +205,7 @@ private fun ExploreView(
                     modifier = Modifier.fillMaxWidth().padding(32.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No wallpapers found", color = Slate500)
+                    Text(stringResource(R.string.msg_no_wallpapers), color = Slate500)
                 }
             }
         }
@@ -276,7 +278,7 @@ private fun CollectionsView(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No data found",
+                        text = stringResource(R.string.msg_no_data),
                         color = Slate500,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
@@ -292,7 +294,7 @@ private fun CollectionsView(
                     modifier = Modifier.fillParentMaxSize().padding(32.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No collections found", color = Slate500)
+                    Text(stringResource(R.string.msg_no_collections), color = Slate500)
                 }
             }
         }
@@ -382,7 +384,7 @@ private fun CollectionCard(
                 fontWeight = FontWeight.ExtraBold
             )
             Text(
-                text = "${collection.totalPhotos} Wallpapers",
+                text = stringResource(R.string.format_wallpapers_count, collection.totalPhotos),
                 color = Slate300,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium

@@ -41,6 +41,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.dream.homeset.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -92,9 +94,10 @@ fun WallpaperPreviewRoute(
     val wallpaperSetSuccess by viewModel.wallpaperSetSuccess.collectAsStateWithLifecycle(initialValue = false)
     val context = LocalContext.current
 
+    val wallpaperSuccessMsg = stringResource(R.string.msg_wallpaper_set_success)
     LaunchedEffect(wallpaperSetSuccess) {
         if (wallpaperSetSuccess) {
-            Toast.makeText(context, "Wallpaper set successfully!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, wallpaperSuccessMsg, Toast.LENGTH_SHORT).show()
             viewModel.resetWallpaperSetSuccess()
         }
     }
@@ -130,7 +133,7 @@ fun WallpaperPreviewRoute(
                     onClick = onBack,
                     modifier = Modifier.padding(top = 24.dp)
                 ) {
-                    Text("Back to Gallery")
+                    Text(stringResource(R.string.btn_back_to_gallery))
                 }
             }
         }
@@ -147,6 +150,7 @@ fun WallpaperPreviewScreen(
     onSetBoth: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
+    var selectedDestination by remember { mutableStateOf<WallpaperDestination?>(null) }
     var isUiVisible by remember { mutableStateOf(true) }
     val zoomState = rememberZoomState()
 
@@ -217,7 +221,7 @@ fun WallpaperPreviewScreen(
                 ) {
                     GlassIconButton(icon = Icons.AutoMirrored.Filled.ArrowBack, onClick = onBack)
                     Text(
-                        text = "Wallpaper Preview",
+                        text = stringResource(R.string.title_wallpaper_preview),
                         color = Color.White,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold
@@ -234,14 +238,14 @@ fun WallpaperPreviewScreen(
                         .align(Alignment.TopCenter)
                 ) {
                     Text(
-                        text = "12:45",
+                        text = stringResource(R.string.sample_time),
                         color = Color.White.copy(alpha = 0.9f),
                         fontSize = 72.sp,
                         fontWeight = FontWeight.Light,
                         letterSpacing = (-1).sp
                     )
                     Text(
-                        text = "Monday, Oct 24",
+                        text = stringResource(R.string.sample_date),
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium
@@ -278,7 +282,7 @@ fun WallpaperPreviewScreen(
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = "Photo by ",
+                                            text = stringResource(R.string.label_photo_by),
                                             color = Slate200,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Medium
@@ -315,7 +319,7 @@ fun WallpaperPreviewScreen(
                                     ),
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
-                                    Text("Set Wallpaper", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Text(stringResource(R.string.btn_set_wallpaper), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                                 }
 
                                 IconButton(
@@ -324,7 +328,7 @@ fun WallpaperPreviewScreen(
                                         .size(56.dp)
                                         .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
                                 ) {
-                                    Icon(Icons.Default.Close, contentDescription = "Hide Options", tint = Color.White)
+                                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.desc_hide_options), tint = Color.White)
                                 }
                             }
                         }
@@ -353,41 +357,63 @@ fun WallpaperPreviewScreen(
                             )
                             Spacer(Modifier.height(24.dp))
                             Text(
-                                "Where would you like to set this?",
+                                stringResource(R.string.title_set_wallpaper_where),
                                 color = Slate100,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(Modifier.height(24.dp))
 
-                            QuickSetItem(
-                                title = "Home Screen",
+                             QuickSetItem(
+                                title = stringResource(R.string.option_home_screen),
                                 icon = Icons.Default.Home,
-                                trailingIcon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                isHighlighted = false,
-                                onClick = onSetHome,
+                                isHighlighted = selectedDestination == WallpaperDestination.HOME,
+                                onClick = { selectedDestination = WallpaperDestination.HOME },
                                 isEnabled = !isSettingWallpaper
                             )
                             QuickSetItem(
-                                title = "Lock Screen",
+                                title = stringResource(R.string.option_lock_screen),
                                 icon = Icons.Default.Lock,
-                                trailingIcon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                isHighlighted = false,
-                                onClick = onSetLock,
+                                isHighlighted = selectedDestination == WallpaperDestination.LOCK,
+                                onClick = { selectedDestination = WallpaperDestination.LOCK },
                                 isEnabled = !isSettingWallpaper
                             )
                             QuickSetItem(
-                                title = "Set Both",
+                                title = stringResource(R.string.option_both),
                                 icon = Icons.Default.Phone,
-                                trailingIcon = Icons.Default.CheckCircle,
-                                isHighlighted = true,
-                                onClick = onSetBoth,
+                                isHighlighted = selectedDestination == WallpaperDestination.BOTH,
+                                onClick = { selectedDestination = WallpaperDestination.BOTH },
                                 isEnabled = !isSettingWallpaper
                             )
 
                             Spacer(Modifier.height(32.dp))
+                            
+                            // Apply Button
+                            Button(
+                                onClick = {
+                                    when (selectedDestination) {
+                                        WallpaperDestination.HOME -> onSetHome()
+                                        WallpaperDestination.LOCK -> onSetLock()
+                                        WallpaperDestination.BOTH -> onSetBoth()
+                                        else -> {}
+                                    }
+                                },
+                                enabled = !isSettingWallpaper && selectedDestination != null,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = PrimaryBlue,
+                                    contentColor = Color.White
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(stringResource(R.string.btn_apply), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            }
+
+                            Spacer(Modifier.height(16.dp))
                             Text(
-                                text = "CANCEL",
+                                text = stringResource(R.string.btn_cancel),
                                 modifier = Modifier
                                     .clickable { isExpanded = false }
                                     .padding(8.dp),
@@ -434,14 +460,13 @@ private fun GlassIconButton(icon: ImageVector, onClick: () -> Unit) {
 private fun QuickSetItem(
     title: String,
     icon: ImageVector,
-    trailingIcon: ImageVector,
     isHighlighted: Boolean,
     onClick: () -> Unit,
     isEnabled: Boolean
 ) {
     val bgColor = if (isHighlighted) PrimaryBlue.copy(alpha = 0.2f) else Color.White.copy(alpha = 0.05f)
     val borderColor = if (isHighlighted) PrimaryBlue.copy(alpha = 0.3f) else Color.Transparent
-    val txtColor = if (isHighlighted) Color.White else Slate100
+    val txtColor = Color.White
 
     Row(
         modifier = Modifier
@@ -457,7 +482,7 @@ private fun QuickSetItem(
         Icon(
             icon,
             contentDescription = null,
-            tint = if (isHighlighted) Color.White else PrimaryBlue,
+            tint = Color.White,
             modifier = Modifier.size(24.dp)
         )
         Spacer(Modifier.width(16.dp))
@@ -467,11 +492,20 @@ private fun QuickSetItem(
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.weight(1f)
         )
-        Icon(
-            trailingIcon,
-            contentDescription = null,
-            tint = if (isHighlighted) Color.White else Slate500
-        )
+        if (isHighlighted) {
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = null,
+                tint = PrimaryBlue,
+                modifier = Modifier.size(24.dp)
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(22.dp)
+                    .border(2.dp, Slate100, CircleShape)
+            )
+        }
     }
 }
 
@@ -533,7 +567,7 @@ private fun ErrorState() {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Failed to load image",
+            text = stringResource(R.string.msg_failed_load_image),
             color = Color.White
         )
     }
@@ -555,7 +589,7 @@ private fun WallpaperSettingLoader() {
         ) {
             CircularProgressIndicator(color = Color.White)
             Text(
-                text = "Setting wallpaper...",
+                text = stringResource(R.string.msg_setting_wallpaper),
                 color = Color.White,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(top = 16.dp)

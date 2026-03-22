@@ -23,6 +23,8 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.dream.homeset.R
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,12 +56,12 @@ fun TopBar(onCloseClick: () -> Unit) {
     ) {
         Icon(
             Icons.Default.Close,
-            contentDescription = "Close",
+            contentDescription = stringResource(R.string.desc_close),
             tint = Color.White,
             modifier = Modifier.clickable(onClick = onCloseClick)
         )
         Text(
-            text = "Wallpapers",
+            text = stringResource(R.string.label_wallpapers),
             color = Color.White,
             fontSize = 18.sp,
             fontWeight = FontWeight.ExtraBold
@@ -108,7 +110,7 @@ fun HeroBanner(
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
                 Text(
-                    text = "FEATURED",
+                    text = stringResource(R.string.label_featured),
                     color = Color.White,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -116,7 +118,7 @@ fun HeroBanner(
                 )
             }
             Text(
-                text = "Wallpaper of the Day",
+                text = stringResource(R.string.hero_title),
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.ExtraBold
@@ -126,7 +128,7 @@ fun HeroBanner(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Ethereal Peaks", color = Slate300, fontSize = 14.sp)
+                Text(text = stringResource(R.string.hero_subtitle), color = Slate300, fontSize = 14.sp)
             }
         }
     }
@@ -149,7 +151,7 @@ fun TabNavigation(
             modifier = Modifier.clickable { onTabSelected(0) }
         ) {
             Text(
-                text = "Explore",
+                text = stringResource(R.string.tab_explore),
                 color = if (selectedTabIndex == 0) PrimaryBlue else Slate500,
                 fontSize = 14.sp,
                 fontWeight = if (selectedTabIndex == 0) FontWeight.ExtraBold else FontWeight.Bold,
@@ -171,7 +173,7 @@ fun TabNavigation(
             modifier = Modifier.clickable { onTabSelected(1) }
         ) {
             Text(
-                text = "Collections",
+                text = stringResource(R.string.tab_collections),
                 color = if (selectedTabIndex == 1) PrimaryBlue else Slate500,
                 fontSize = 14.sp,
                 fontWeight = if (selectedTabIndex == 1) FontWeight.ExtraBold else FontWeight.Bold,
@@ -243,7 +245,7 @@ fun SectionHeader(title: String, onSeeAll: (() -> Unit)? = null) {
         )
         if (onSeeAll != null) {
             Text(
-                text = "VIEW ALL",
+                text = stringResource(R.string.btn_view_all),
                 color = PrimaryBlue,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
