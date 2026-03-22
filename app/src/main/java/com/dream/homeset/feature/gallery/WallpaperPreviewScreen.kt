@@ -40,7 +40,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.res.stringResource
 import com.dream.homeset.R
 import androidx.compose.runtime.Composable
@@ -82,7 +85,7 @@ private val Slate300 = Color(0xFFCBD5E1)
 private val Slate500 = Color(0xFF64748B)
 private val Slate200 = Color(0xFFE2E8F0)
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun WallpaperPreviewRoute(
     viewModel: WallpaperGalleryViewModel,
@@ -140,6 +143,7 @@ fun WallpaperPreviewRoute(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WallpaperPreviewScreen(
     photo: Photo,
@@ -153,6 +157,7 @@ fun WallpaperPreviewScreen(
     var selectedDestination by remember { mutableStateOf<WallpaperDestination?>(WallpaperDestination.BOTH) }
     var isUiVisible by remember { mutableStateOf(true) }
     val zoomState = rememberZoomState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Box(
         modifier = Modifier
@@ -335,94 +340,86 @@ fun WallpaperPreviewScreen(
                     }
 
                     // Expanded Sheet
-                    AnimatedVisibility(
-                        visible = isExpanded,
-                        enter = slideInVertically { it } + fadeIn(),
-                        exit = slideOutVertically { it } + fadeOut(),
-                        modifier = Modifier.zIndex(1f) // Ensure sheet is always on top
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(SheetBg, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                                .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                                .padding(horizontal = 24.dp, vertical = 24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                    if (isExpanded) {
+                        ModalBottomSheet(
+                            onDismissRequest = { isExpanded = false },
+                            sheetState = sheetState,
+                            containerColor = SheetBg,
+                            dragHandle = {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(top = 16.dp)
+                                        .width(48.dp)
+                                        .height(4.dp)
+                                        .background(Color.White.copy(alpha = 0.2f), CircleShape)
+                                )
+                            },
+                            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .width(48.dp)
-                                    .height(4.dp)
-                                    .background(Color.White.copy(alpha = 0.2f), CircleShape)
-                            )
-                            Spacer(Modifier.height(24.dp))
-                            Text(
-                                stringResource(R.string.title_set_wallpaper_where),
-                                color = Slate100,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(Modifier.height(24.dp))
-
-                             QuickSetItem(
-                                title = stringResource(R.string.option_home_screen),
-                                icon = Icons.Default.Home,
-                                isHighlighted = selectedDestination == WallpaperDestination.HOME,
-                                onClick = { selectedDestination = WallpaperDestination.HOME },
-                                isEnabled = !isSettingWallpaper
-                            )
-                            QuickSetItem(
-                                title = stringResource(R.string.option_lock_screen),
-                                icon = Icons.Default.Lock,
-                                isHighlighted = selectedDestination == WallpaperDestination.LOCK,
-                                onClick = { selectedDestination = WallpaperDestination.LOCK },
-                                isEnabled = !isSettingWallpaper
-                            )
-                            QuickSetItem(
-                                title = stringResource(R.string.option_both),
-                                icon = Icons.Default.Phone,
-                                isHighlighted = selectedDestination == WallpaperDestination.BOTH,
-                                onClick = { selectedDestination = WallpaperDestination.BOTH },
-                                isEnabled = !isSettingWallpaper
-                            )
-
-                            Spacer(Modifier.height(32.dp))
-                            
-                            // Apply Button
-                            Button(
-                                onClick = {
-                                    when (selectedDestination) {
-                                        WallpaperDestination.HOME -> onSetHome()
-                                        WallpaperDestination.LOCK -> onSetLock()
-                                        WallpaperDestination.BOTH -> onSetBoth()
-                                        else -> {}
-                                    }
-                                },
-                                enabled = !isSettingWallpaper && selectedDestination != null,
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(56.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.White,
-                                    contentColor = Color.Black
-                                ),
-                                shape = RoundedCornerShape(12.dp)
+                                    .padding(horizontal = 24.dp)
+                                    .padding(bottom = 32.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(stringResource(R.string.btn_apply), fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                            }
+                                Spacer(Modifier.height(16.dp))
+                                Text(
+                                    stringResource(R.string.title_set_wallpaper_where),
+                                    color = Slate100,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(Modifier.height(24.dp))
 
-                            Spacer(Modifier.height(16.dp))
-                            Text(
-                                text = stringResource(R.string.btn_cancel),
-                                modifier = Modifier
-                                    .clickable { isExpanded = false }
-                                    .padding(8.dp),
-                                color = Slate500,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 2.sp
-                            )
-                            Spacer(Modifier.height(16.dp))
+                                QuickSetItem(
+                                    title = stringResource(R.string.option_home_screen),
+                                    icon = Icons.Default.Home,
+                                    isHighlighted = selectedDestination == WallpaperDestination.HOME,
+                                    onClick = { selectedDestination = WallpaperDestination.HOME },
+                                    isEnabled = !isSettingWallpaper
+                                )
+                                QuickSetItem(
+                                    title = stringResource(R.string.option_lock_screen),
+                                    icon = Icons.Default.Lock,
+                                    isHighlighted = selectedDestination == WallpaperDestination.LOCK,
+                                    onClick = { selectedDestination = WallpaperDestination.LOCK },
+                                    isEnabled = !isSettingWallpaper
+                                )
+                                QuickSetItem(
+                                    title = stringResource(R.string.option_both),
+                                    icon = Icons.Default.Phone,
+                                    isHighlighted = selectedDestination == WallpaperDestination.BOTH,
+                                    onClick = { selectedDestination = WallpaperDestination.BOTH },
+                                    isEnabled = !isSettingWallpaper
+                                )
+
+                                Spacer(Modifier.height(32.dp))
+                                
+                                // Apply Button
+                                Button(
+                                    onClick = {
+                                        when (selectedDestination) {
+                                            WallpaperDestination.HOME -> onSetHome()
+                                            WallpaperDestination.LOCK -> onSetLock()
+                                            WallpaperDestination.BOTH -> onSetBoth()
+                                            else -> {}
+                                        }
+                                        isExpanded = false
+                                    },
+                                    enabled = !isSettingWallpaper && selectedDestination != null,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(56.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color.White,
+                                        contentColor = Color.Black
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(stringResource(R.string.btn_apply), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                }
+                            }
                         }
                     }
                 }
