@@ -20,6 +20,8 @@ data class FavoritePhotoEntity(
     val userId: String?,
     val userName: String?,
     val userUsername: String?,
+    val userProfileHtmlUrl: String?,
+    val downloadLocation: String?,
     val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -37,8 +39,14 @@ fun FavoritePhotoEntity.toDomainModel(): Photo {
             thumb = thumbUrl
         ),
         user = if (userId != null && userName != null && userUsername != null) {
-            PhotoUser(id = userId, name = userName, username = userUsername)
-        } else null
+            PhotoUser(
+                id = userId,
+                name = userName,
+                username = userUsername,
+                profileHtmlUrl = userProfileHtmlUrl ?: ""
+            )
+        } else null,
+        downloadLocation = downloadLocation ?: ""
     )
 }
 
@@ -55,6 +63,8 @@ fun Photo.toEntity(): FavoritePhotoEntity {
         thumbUrl = urls.thumb,
         userId = user?.id,
         userName = user?.name,
-        userUsername = user?.username
+        userUsername = user?.username,
+        userProfileHtmlUrl = user?.profileHtmlUrl,
+        downloadLocation = downloadLocation
     )
 }

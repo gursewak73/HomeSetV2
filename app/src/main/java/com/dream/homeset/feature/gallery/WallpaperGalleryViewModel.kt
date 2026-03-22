@@ -24,7 +24,8 @@ class WallpaperGalleryViewModel(
     private val getFavoritePhotosUseCase: GetFavoritePhotosUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val isFavoriteUseCase: IsFavoriteUseCase,
-    private val setWallpaperUseCaseFactory: (Context) -> SetWallpaperUseCase
+    private val setWallpaperUseCaseFactory: (Context) -> SetWallpaperUseCase,
+    private val trackPhotoDownloadUseCase: TrackPhotoDownloadUseCase
 ) : ViewModel() {
 
     val photosPagingData: Flow<PagingData<Photo>> =
@@ -132,6 +133,9 @@ class WallpaperGalleryViewModel(
             val result = useCase(photo, destination)
             
             _wallpaperSetSuccess.value = result.isSuccess
+            if (result.isSuccess) {
+                trackPhotoDownloadUseCase(photo.downloadLocation)
+            }
             _isSettingWallpaper.value = false
         }
     }
@@ -161,7 +165,8 @@ class WallpaperGalleryViewModel(
                     getFavoritePhotosUseCase = GetFavoritePhotosUseCase(repository),
                     toggleFavoriteUseCase = ToggleFavoriteUseCase(repository),
                     isFavoriteUseCase = IsFavoriteUseCase(repository),
-                    setWallpaperUseCaseFactory = { ctx -> SetWallpaperUseCase(WallpaperRepositoryImpl(ctx)) }
+                    setWallpaperUseCaseFactory = { ctx -> SetWallpaperUseCase(WallpaperRepositoryImpl(ctx)) },
+                    trackPhotoDownloadUseCase = TrackPhotoDownloadUseCase(repository)
                 ) as T
             }
         }

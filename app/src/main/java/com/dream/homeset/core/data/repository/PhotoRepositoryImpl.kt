@@ -94,4 +94,19 @@ class PhotoRepositoryImpl(
             }
         }
     }
+
+    override suspend fun trackDownload(url: String): Result<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = api.trackDownload(url)
+                if (response.isSuccessful) {
+                    Result.success(Unit)
+                } else {
+                    Result.failure(Exception("Failed to track download: ${response.code()}"))
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+    }
 }

@@ -5,6 +5,8 @@ import com.dream.homeset.core.model.UnsplashCollection
 import retrofit2.http.GET
 import retrofit2.http.Query
 import retrofit2.http.Path
+import retrofit2.http.Url
+import retrofit2.Response
 
 interface UnsplashApiService {
 
@@ -37,5 +39,11 @@ interface UnsplashApiService {
         @Query("page") page: Int,
         @Query("per_page") perPage: Int
     ): List<UnsplashPhoto>
+
+    @GET
+    suspend fun trackDownload(
+        @Url url: String,
+        @Query("client_id") clientId: String = UnsplashConfig.CLIENT_ID
+    ): Response<Unit>
 }
 

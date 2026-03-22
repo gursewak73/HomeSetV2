@@ -15,7 +15,8 @@ fun UnsplashPhoto.toDomain(): Photo {
         width = width,
         height = height,
         urls = urls.toDomain(),
-        user = user?.toDomain()
+        user = user?.toDomain(),
+        downloadLocation = links.downloadLocation
     )
 }
 
@@ -33,7 +34,8 @@ fun UnsplashUser.toDomain(): PhotoUser {
     return PhotoUser(
         id = id,
         name = name,
-        username = username
+        username = username,
+        profileHtmlUrl = links.html
     )
 }
 

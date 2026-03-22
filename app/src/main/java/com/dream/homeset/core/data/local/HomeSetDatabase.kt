@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.dream.homeset.core.data.local.dao.FavoritePhotoDao
 import com.dream.homeset.core.data.local.entity.FavoritePhotoEntity
 
-@Database(entities = [FavoritePhotoEntity::class], version = 1, exportSchema = false)
+@Database(entities = [FavoritePhotoEntity::class], version = 2, exportSchema = false)
 abstract class HomeSetDatabase : RoomDatabase() {
     abstract fun favoritePhotoDao(): FavoritePhotoDao
 
@@ -21,7 +21,9 @@ abstract class HomeSetDatabase : RoomDatabase() {
                     context.applicationContext,
                     HomeSetDatabase::class.java,
                     "homeset_database"
-                ).build()
+                )
+                .fallbackToDestructiveMigration()
+                .build()
                 INSTANCE = instance
                 instance
             }

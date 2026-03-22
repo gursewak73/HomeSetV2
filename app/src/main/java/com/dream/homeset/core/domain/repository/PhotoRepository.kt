@@ -16,4 +16,6 @@ interface PhotoRepository {
     fun getAllFavoritePhotos(): Flow<List<Photo>>
     fun isFavorite(id: String): Flow<Boolean>
     suspend fun toggleFavorite(photo: Photo)
+    // Tracking
+    suspend fun trackDownload(url: String): Result<Unit>
 }

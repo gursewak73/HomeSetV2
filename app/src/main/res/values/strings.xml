@@ -25,6 +25,7 @@
     <string name="sample_time">12:45</string>
     <string name="sample_date">Monday, Oct 24</string>
     <string name="label_photo_by">Photo by </string>
+    <string name="label_on_unsplash"> on Unsplash</string>
     <string name="btn_set_wallpaper">Set Wallpaper</string>
     <string name="desc_hide_options">Hide Options</string>
     <string name="title_set_wallpaper_where">Where would you like to set this?</string>

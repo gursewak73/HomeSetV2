@@ -63,6 +63,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -74,6 +75,7 @@ import coil.compose.SubcomposeAsyncImageContent
 import com.dream.homeset.core.domain.model.Photo
 import com.dream.homeset.core.domain.model.WallpaperDestination
 import com.dream.homeset.feature.gallery.WallpaperGalleryViewModel
+import com.dream.homeset.core.network.UnsplashConfig
 import net.engawapg.lib.zoomable.ZoomState
 import net.engawapg.lib.zoomable.rememberZoomState
 import net.engawapg.lib.zoomable.zoomable
@@ -166,6 +168,7 @@ fun WallpaperPreviewScreen(
     var isUiVisible by remember { mutableStateOf(true) }
     val zoomState = rememberZoomState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val uriHandler = LocalUriHandler.current
 
     Box(
         modifier = Modifier
@@ -304,7 +307,21 @@ fun WallpaperPreviewScreen(
                                             text = userName,
                                             color = Color.White,
                                             fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.clickable {
+                                                photo.user?.profileHtmlUrl?.let { 
+                                                    uriHandler.openUri(it + UnsplashConfig.UTM_PARAMS) 
+                                                }
+                                            }
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.label_on_unsplash),
+                                            color = Slate200,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            modifier = Modifier.clickable {
+                                                uriHandler.openUri("https://unsplash.com/" + UnsplashConfig.UTM_PARAMS)
+                                            }
                                         )
                                     }
                                 }

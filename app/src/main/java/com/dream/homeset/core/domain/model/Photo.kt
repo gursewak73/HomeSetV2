@@ -6,7 +6,8 @@ data class Photo(
     val width: Int,
     val height: Int,
     val urls: PhotoUrls,
-    val user: PhotoUser?
+    val user: PhotoUser?,
+    val downloadLocation: String
 )
 
 data class PhotoUrls(
@@ -20,5 +21,6 @@ data class PhotoUrls(
 data class PhotoUser(
     val id: String,
     val name: String,
-    val username: String
+    val username: String,
+    val profileHtmlUrl: String
 )

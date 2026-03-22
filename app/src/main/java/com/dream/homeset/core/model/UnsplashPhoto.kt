@@ -8,6 +8,11 @@ data class UnsplashPhoto(
     @SerializedName("width") val width: Int,
     @SerializedName("height") val height: Int,
     @SerializedName("urls") val urls: UnsplashUrls,
-    @SerializedName("user") val user: UnsplashUser?
+    @SerializedName("user") val user: UnsplashUser?,
+    @SerializedName("links") val links: UnsplashPhotoLinks
+)
+
+data class UnsplashPhotoLinks(
+    @SerializedName("download_location") val downloadLocation: String
 )
 
