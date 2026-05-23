@@ -200,6 +200,19 @@ private fun ExploreView(
         // Photos Grid (Chunked into pairs for LazyColumn)
         val itemCount = photos.itemCount
 
+        if (photos.loadState.refresh is LoadState.Loading) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillParentMaxSize()
+                        .padding(bottom = 100.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = PrimaryBlue)
+                }
+            }
+        }
+
         // Handle initial load error
         if (photos.loadState.refresh is LoadState.Error) {
             item {
@@ -293,6 +306,19 @@ private fun CollectionsView(
     ) {
         // Combined Header and View All logic removed as requested
         
+        if (collections.loadState.refresh is LoadState.Loading) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillParentMaxSize()
+                        .padding(bottom = 100.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = PrimaryBlue)
+                }
+            }
+        }
+
         // Handle initial load error
         if (collections.loadState.refresh is LoadState.Error) {
             item {

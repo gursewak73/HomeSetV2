@@ -117,7 +117,21 @@ private fun CollectionDetailView(
 
         val itemCount = photos.itemCount
 
+        if (photos.loadState.refresh is LoadState.Loading) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillParentMaxSize()
+                        .padding(bottom = 100.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = PrimaryBlue)
+                }
+            }
+        }
+
         if (photos.loadState.refresh is LoadState.Error) {
+
             item {
                 Box(
                     modifier = Modifier.fillMaxWidth().padding(32.dp),
